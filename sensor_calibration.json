@@ -1,0 +1,16 @@
+{
+  "angle": {
+    "raw_min": 1019.3323053199691,
+    "raw_max": 705.540192926045,
+    "real_min": 0.0,
+    "real_max": 45.0,
+    "calibrated": true
+  },
+  "force": {
+    "raw_min": 23.444794952681388,
+    "raw_max": 55.96846254927727,
+    "real_min": 0.0,
+    "real_max": 1.0,
+    "calibrated": true
+  }
+}

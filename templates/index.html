@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEVEM - Mesure de la verse du maïs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100vw;
+            margin: 0;
+            padding: 12px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #2563eb;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            color: #1a202c;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            color: #718096;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* Layout principal */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2d3748;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-width: 80px;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-warning {
+            background: #d97706;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #b45309;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover {
+            background: inherit;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .status-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+
+        .status-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: #4a5568;
+        }
+
+        .status-value {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #f7fafc;
+        }
+
+        .status-online { 
+            color: #059669; 
+            background: #d1fae5;
+        }
+        .status-offline { 
+            color: #dc2626; 
+            background: #fee2e2;
+        }
+        .status-measuring { 
+            color: #2563eb; 
+            background: #dbeafe;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .data-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #718096;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        /* Contrôles de formulaire */
+        select, input[type="range"], input[type="text"] {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: inherit;
+            background: white;
+        }
+
+        select:focus, input[type="range"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        input[type="text"]::placeholder {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        input[type="range"] {
+            height: 8px;
+            background: #e2e8f0;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .alert {
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 3px solid;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            border-left-color: #22c55e;
+            color: #15803d;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            border-left-color: #ef4444;
+            color: #dc2626;
+        }
+
+        .alert-info {
+            background-color: #eff6ff;
+            border-left-color: #3b82f6;
+            color: #1d4ed8;
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #d97706;
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 280px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 8px;
+            }
+            
+            .main-layout {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .sidebar {
+                order: 2;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 8px;
+            }
+            
+            .control-panel {
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            
+            .chart-container {
+                order: 1;
+                height: 400px;
+            }
+            
+            .data-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .header p {
+                font-size: 0.8rem;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .range-input {
+            flex: 1;
+        }
+
+        .range-value {
+            font-weight: 600;
+            min-width: 80px;
+            font-size: 0.9rem;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 MEVEM</h1>
+            <p>Mesure de la verse du maïs - Centre de recherche de Chappes (CRC) Limagrain</p>
+        </div>
+
+        <!-- Zone d'alertes -->
+        <div id="alertContainer"></div>
+
+        <div class="main-layout">
+            <!-- Panneau latéral de contrôles -->
+            <div class="sidebar">
+                <!-- Configuration de la connexion -->
+                <div class="control-panel">
+                    <div class="panel-title">Connexion capteur</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="portSelect">Port série</label>
+                        <select id="portSelect">
+                            <option value="">Recherche en cours...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="btn-group">
+                            <button id="selectPortBtn" class="btn btn-primary btn-full" disabled>
+                                Connecter
+                            </button>
+                        </div>
+                        <div style="margin-top: 6px;">
+                            <button id="refreshPortsBtn" class="btn btn-secondary btn-full">
+                                Actualiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration d'acquisition -->
+                <div class="control-panel">
+                    <div class="panel-title">Paramètres d'acquisition</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="averagingSlider">
+                            Moyennage : <span id="averagingValue" class="range-value">25 valeurs</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="range" id="averagingSlider" min="1" max="100" value="25" class="range-input">
+                            <button id="applyAveragingBtn" class="btn btn-primary">
+                                Appliquer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles de mesure -->
+                <div class="control-panel">
+                    <div class="panel-title">Contrôles de mesure</div>
+                    
+                    <div class="control-group">
+                        <button id="startBtn" class="btn btn-success btn-full">
+                            <span class="btn-text">Démarrer acquisition</span>
+                        </button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="btn-group">
+                            <button id="stopBtn" class="btn btn-danger" disabled>
+                                Arrêter
+                            </button>
+                            <button id="clearBtn" class="btn btn-warning">
+                                Effacer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="exportFilename">Nom du fichier</label>
+                        <div class="input-group">
+                            <input type="text" id="exportFilename" placeholder="mesure_mevem" class="range-input">
+                            <button id="autoNameBtn" class="btn btn-secondary" style="min-width: 60px;">
+                                Auto
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button id="exportBtn" class="btn btn-primary btn-full" disabled>
+                            Exporter Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- État du système -->
+                <div class="status-panel">
+                    <div class="panel-title">État du système</div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">Port série</span>
+                        <span id="portStatus" class="status-value status-offline">Non connecté</span>
+                    </div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">État</span>
+                        <span id="measurementStatus" class="status-value">Arrêtée</span>
+                    </div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">Échantillons</span>
+                        <span id="dataPoints" class="status-value">0</span>
+                    </div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">Calibration angle</span>
+                        <span id="angleCalibration" class="status-value status-offline">Non calibré</span>
+                    </div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">Calibration force</span>
+                        <span id="forceCalibration" class="status-value status-offline">Non calibré</span>
+                    </div>
+                    
+                    <div class="status-row">
+                        <span class="status-label">Moyennage</span>
+                        <span id="averagingStatus" class="status-value">25 valeurs</span>
+                    </div>
+                </div>
+
+                <!-- Calibration -->
+                <div class="control-panel">
+                    <div class="panel-title">Calibration</div>
+                    
+                    <div class="control-group">
+                        <div class="btn-group">
+                            <button id="calibrateBtn" class="btn btn-secondary">
+                                Calibrer
+                            </button>
+                            <button id="refreshBtn" class="btn btn-secondary">
+                                Actualiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone graphique principale -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Courbe Force vs Angle</div>
+                    <div id="connectionStatus" class="status-value status-offline">Déconnecté</div>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <canvas id="measurementChart"></canvas>
+                </div>
+                
+                <!-- Statistiques des données -->
+                <div class="data-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statDuration">0.0</div>
+                        <div class="stat-label">Durée (s)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statAngleRange">0.0°</div>
+                        <div class="stat-label">Amplitude angle</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statForceMax">0.000</div>
+                        <div class="stat-label">Force max (kg)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statPoints">0</div>
+                        <div class="stat-label">Échantillons</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let socket;
+        let chart;
+        let measurementData = [];
+        let isConnected = false;
+        let isMeasuring = false;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initSocket();
+            initChart();
+            initEventListeners();
+            loadAvailablePorts();
+            loadAveragingSettings();
+            refreshStatus();
+        });
+
+        // Initialisation WebSocket
+        function initSocket() {
+            socket = io();
+            
+            socket.on('connect', function() {
+                isConnected = true;
+                updateConnectionStatus('Connecté', 'status-online');
+                showAlert('Connexion établie avec le serveur', 'alert-success');
+            });
+            
+            socket.on('disconnect', function() {
+                isConnected = false;
+                updateConnectionStatus('Déconnecté', 'status-offline');
+                showAlert('Connexion perdue avec le serveur', 'alert-danger');
+            });
+            
+            socket.on('measurement_data', function(data) {
+                addMeasurementPoint(data);
+            });
+            
+            socket.on('error', function(data) {
+                showAlert('Erreur: ' + data.message, 'alert-danger');
+            });
+        }
+
+        // Initialisation du graphique
+        function initChart() {
+            const ctx = document.getElementById('measurementChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Force vs Angle',
+                        data: [],
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        showLine: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Mesure de la verse - Force en fonction de l\'angle'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Angle (°)'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Force (kg)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'point'
+                    }
+                }
+            });
+        }
+
+        // Event listeners
+        function initEventListeners() {
+            document.getElementById('startBtn').addEventListener('click', startMeasurement);
+            document.getElementById('stopBtn').addEventListener('click', stopMeasurement);
+            document.getElementById('clearBtn').addEventListener('click', clearMeasurement);
+            document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+            document.getElementById('calibrateBtn').addEventListener('click', startCalibration);
+            document.getElementById('refreshBtn').addEventListener('click', refreshStatus);
+            document.getElementById('selectPortBtn').addEventListener('click', selectSerialPort);
+            document.getElementById('refreshPortsBtn').addEventListener('click', loadAvailablePorts);
+            document.getElementById('applyAveragingBtn').addEventListener('click', applyAveraging);
+            document.getElementById('autoNameBtn').addEventListener('click', generateAutoFilename);
+            
+            // Event listener pour la sélection du port
+            document.getElementById('portSelect').addEventListener('change', function() {
+                const selectBtn = document.getElementById('selectPortBtn');
+                selectBtn.disabled = !this.value;
+            });
+            
+            // Event listener pour le slider de moyennage
+            document.getElementById('averagingSlider').addEventListener('input', function() {
+                const value = this.value;
+                document.getElementById('averagingValue').textContent = `${value} valeurs`;
+            });
+        }
+
+        // Fonctions de gestion des ports série
+        async function loadAvailablePorts() {
+            try {
+                const response = await fetch('/api/ports/list');
+                const result = await response.json();
+                
+                const portSelect = document.getElementById('portSelect');
+                portSelect.innerHTML = '';
+                
+                if (result.ports && result.ports.length > 0) {
+                    // Ajouter une option par défaut
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '📡 Sélectionnez un port...';
+                    portSelect.appendChild(defaultOption);
+                    
+                    // Ajouter les ports disponibles
+                    result.ports.forEach(port => {
+                        const option = document.createElement('option');
+                        option.value = port.device;
+                        
+                        // Afficher le statut d'accès
+                        if (port.accessible) {
+                            option.textContent = `${port.device} - ${port.description}`;
+                        } else {
+                            option.textContent = `${port.device} - ${port.description} (${port.error})`;
+                            option.disabled = true;
+                        }
+                        
+                        portSelect.appendChild(option);
+                        
+                        // Sélectionner le port actuel si défini et accessible
+                        if (port.device === result.current_port && port.accessible) {
+                            option.selected = true;
+                            updatePortStatus(port.device, 'status-online');
+                        }
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Aucun port série trouvé';
+                    portSelect.appendChild(option);
+                }
+                
+                // Mettre à jour l'état du bouton
+                const selectBtn = document.getElementById('selectPortBtn');
+                selectBtn.disabled = !portSelect.value;
+                
+            } catch (error) {
+                showAlert('Erreur lors du chargement des ports: ' + error.message, 'alert-danger');
+                const portSelect = document.getElementById('portSelect');
+                portSelect.innerHTML = '<option value="">❌ Erreur de chargement</option>';
+            }
+        }
+
+        async function selectSerialPort() {
+            const portSelect = document.getElementById('portSelect');
+            const selectedPort = portSelect.value;
+            
+            if (!selectedPort) {
+                showAlert('Veuillez sélectionner un port série', 'alert-warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/ports/select', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({port: selectedPort})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updatePortStatus(selectedPort, 'status-online');
+                    updateConnectionStatus('Connecté', 'status-online');
+                    showAlert(`Port ${selectedPort} sélectionné avec succès`, 'alert-success');
+                    
+                    // Actualiser le statut global
+                    refreshStatus();
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec de la connexion'), 'alert-danger');
+                    updatePortStatus('Erreur de connexion', 'status-offline');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+                updatePortStatus('Erreur de connexion', 'status-offline');
+            }
+        }
+
+        // Fonction de génération automatique de nom de fichier
+        function generateAutoFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const autoName = `MEVEM_CRC_${year}${month}${day}_${hours}${minutes}`;
+            
+            document.getElementById('exportFilename').value = autoName;
+        }
+
+        // Fonctions de gestion du moyennage
+        async function loadAveragingSettings() {
+            try {
+                const response = await fetch('/api/averaging/get');
+                const result = await response.json();
+                
+                if (result.averaging_window) {
+                    const slider = document.getElementById('averagingSlider');
+                    const valueDisplay = document.getElementById('averagingValue');
+                    const statusDisplay = document.getElementById('averagingStatus');
+                    
+                    slider.value = result.averaging_window;
+                    valueDisplay.textContent = `${result.averaging_window} valeurs`;
+                    statusDisplay.textContent = `${result.averaging_window} valeurs`;
+                }
+            } catch (error) {
+                showAlert('Erreur lors du chargement des paramètres de moyennage: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function applyAveraging() {
+            const slider = document.getElementById('averagingSlider');
+            const newValue = parseInt(slider.value);
+            
+            try {
+                const response = await fetch('/api/averaging/set', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({window: newValue})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('averagingStatus').textContent = `${newValue} valeurs`;
+                    showAlert(`Moyennage configuré à ${newValue} valeurs`, 'alert-success');
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec de la configuration'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        // Fonctions de mesure
+        async function startMeasurement() {
+            try {
+                const response = await fetch('/api/measurement/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    isMeasuring = true;
+                    updateMeasurementStatus('En cours', 'status-measuring');
+                    updateButtons();
+                    showAlert('Mesure démarrée', 'alert-success');
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec du démarrage'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function stopMeasurement() {
+            try {
+                const response = await fetch('/api/measurement/stop', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    isMeasuring = false;
+                    updateMeasurementStatus('Arrêtée', 'status-offline');
+                    updateButtons();
+                    showAlert(`Mesure arrêtée (${result.data_points} points)`, 'alert-info');
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec de l\'arrêt'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function clearMeasurement() {
+            if (measurementData.length === 0) {
+                showAlert('Aucune donnée à effacer', 'alert-info');
+                return;
+            }
+
+            if (!confirm('Êtes-vous sûr de vouloir effacer toutes les données?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/measurement/clear', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    measurementData = [];
+                    chart.data.datasets[0].data = [];
+                    chart.update();
+                    updateDataStats();
+                    updateButtons();
+                    showAlert('Données effacées', 'alert-success');
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec de l\'effacement'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function exportToExcel() {
+            if (measurementData.length === 0) {
+                showAlert('Aucune donnée à exporter', 'alert-info');
+                return;
+            }
+
+            // Récupérer le nom personnalisé ou utiliser le défaut
+            const filenameInput = document.getElementById('exportFilename');
+            let customName = filenameInput.value.trim();
+            
+            // Nettoyer le nom de fichier (supprimer les caractères non autorisés)
+            if (customName) {
+                customName = customName.replace(/[<>:"/\\|?*]/g, '_');
+            }
+            
+            // Nom par défaut si aucun nom n'est spécifié
+            if (!customName) {
+                customName = 'mesure_mevem';
+            }
+            
+            // Ajouter timestamp pour éviter les conflits
+            const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+            const finalFilename = `${customName}_${timestamp}.xlsx`;
+
+            try {
+                const response = await fetch('/api/measurement/export/excel', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = finalFilename;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showAlert(`Export Excel réussi: ${finalFilename}`, 'alert-success');
+                } else {
+                    const result = await response.json();
+                    showAlert('Erreur export: ' + (result.error || 'Échec'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function startCalibration() {
+            if (!confirm('Démarrer la calibration des capteurs?\nSuivez les instructions dans la console.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/calibration/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Calibration démarrée - Suivez les instructions dans la console', 'alert-info');
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec du démarrage'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/calibration/status');
+                const status = await response.json();
+                
+                if (status.error) {
+                    showAlert('Erreur statut: ' + status.error, 'alert-danger');
+                    return;
+                }
+                
+                // Mettre à jour les statuts de calibration
+                updateCalibrationStatus('angleCalibration', status.angle_calibrated);
+                updateCalibrationStatus('forceCalibration', status.force_calibrated);
+                
+                // Récupérer les données de mesure
+                const dataResponse = await fetch('/api/measurement/data');
+                const dataStatus = await dataResponse.json();
+                
+                measurementData = dataStatus.data || [];
+                isMeasuring = dataStatus.active;
+                
+                // Mettre à jour l'interface
+                updateMeasurementStatus(isMeasuring ? 'En cours' : 'Arrêtée', 
+                                      isMeasuring ? 'status-measuring' : 'status-offline');
+                updateDataPoints(dataStatus.points || 0);
+                updateButtons();
+                
+                // Mettre à jour le graphique
+                chart.data.datasets[0].data = measurementData.map(d => ({x: d.angle, y: d.force}));
+                chart.update();
+                updateDataStats();
+                
+            } catch (error) {
+                showAlert('Erreur actualisation: ' + error.message, 'alert-danger');
+            }
+        }
+
+        // Fonctions utilitaires
+        function addMeasurementPoint(data) {
+            measurementData.push(data);
+            
+            // Ajouter au graphique
+            chart.data.datasets[0].data.push({
+                x: data.angle,
+                y: data.force
+            });
+            
+            // Limiter le nombre de points affichés pour les performances
+            if (chart.data.datasets[0].data.length > 1000) {
+                chart.data.datasets[0].data.shift();
+            }
+            
+            chart.update('none'); // Update sans animation pour les performances
+            
+            updateDataPoints(measurementData.length);
+            updateDataStats();
+        }
+
+        function updateConnectionStatus(text, className) {
+            const element = document.getElementById('connectionStatus');
+            element.textContent = text;
+            element.className = 'status-value ' + className;
+        }
+
+        function updatePortStatus(text, className) {
+            const element = document.getElementById('portStatus');
+            element.textContent = text;
+            element.className = 'status-value ' + className;
+        }
+
+        function updateMeasurementStatus(text, className) {
+            const element = document.getElementById('measurementStatus');
+            element.textContent = text;
+            element.className = 'status-value ' + className;
+        }
+
+        function updateCalibrationStatus(elementId, isCalibrated) {
+            const element = document.getElementById(elementId);
+            element.textContent = isCalibrated ? 'Calibré' : 'Non calibré';
+            element.className = 'status-value ' + (isCalibrated ? 'status-online' : 'status-offline');
+        }
+
+        function updateDataPoints(count) {
+            document.getElementById('dataPoints').textContent = count;
+        }
+
+        function updateButtons() {
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            startBtn.disabled = isMeasuring;
+            stopBtn.disabled = !isMeasuring;
+            exportBtn.disabled = measurementData.length === 0;
+            clearBtn.disabled = isMeasuring;
+            
+            // Mise à jour du texte du bouton start
+            const btnText = startBtn.querySelector('.btn-text');
+            if (isMeasuring) {
+                btnText.innerHTML = '<span class="loading"></span> Acquisition en cours';
+            } else {
+                btnText.innerHTML = 'Démarrer acquisition';
+            }
+        }
+
+        function updateDataStats() {
+            if (measurementData.length === 0) {
+                document.getElementById('statDuration').textContent = '0.0';
+                document.getElementById('statAngleRange').textContent = '0.0°';
+                document.getElementById('statForceMax').textContent = '0.000';
+                document.getElementById('statPoints').textContent = '0';
+                return;
+            }
+            
+            const timestamps = measurementData.map(d => d.timestamp);
+            const angles = measurementData.map(d => d.angle);
+            const forces = measurementData.map(d => d.force);
+            
+            const duration = Math.max(...timestamps) - Math.min(...timestamps);
+            const angleRange = Math.max(...angles) - Math.min(...angles);
+            const forceMax = Math.max(...forces);
+            
+            document.getElementById('statDuration').textContent = duration.toFixed(1);
+            document.getElementById('statAngleRange').textContent = angleRange.toFixed(1) + '°';
+            document.getElementById('statForceMax').textContent = forceMax.toFixed(3);
+            document.getElementById('statPoints').textContent = measurementData.length;
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            
+            container.appendChild(alert);
+            
+            // Auto-remove après 5 secondes
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
