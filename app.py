@@ -22,16 +22,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mevem_secret_2024'
 # Configuration SocketIO compatible PyInstaller
 import os
-if getattr(sys, 'frozen', False):
-    # Nous sommes dans un exécutable PyInstaller
-    socketio = SocketIO(app, cors_allowed_origins="*", logger=False, engineio_logger=False)
-else:
-    # Mode développement
-    try:
-        import eventlet
-        socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
-    except ImportError:
-        socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+# Configuration SocketIO - mode simple pour PyInstaller
+socketio = SocketIO(app, cors_allowed_origins="*", logger=False, engineio_logger=False)
 
 # Instance globale du décodeur
 decoder = None

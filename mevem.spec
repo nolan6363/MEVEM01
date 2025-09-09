@@ -5,12 +5,12 @@ a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static')],
-    hiddenimports=['pandas', 'openpyxl', 'flask_socketio', 'engineio', 'socketio', 'serial'],
+    datas=[('templates', 'templates')],
+    hiddenimports=['pandas', 'openpyxl', 'flask_socketio', 'engineio', 'socketio', 'engineio.server', 'socketio.server', 'engineio.async_drivers.threading', 'serial', 'serial.tools.list_ports', 'threading'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['matplotlib', 'IPython', 'jupyter', 'notebook', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6', 'tkinter', 'PIL.ImageTk'],
     noarchive=False,
 )
 pyz = PYZ(a.pure)

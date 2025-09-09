@@ -24,11 +24,23 @@ def build_linux():
     if build_dir.exists():
         shutil.rmtree(build_dir)
     
-    # Commande PyInstaller
+    # Commande PyInstaller optimisée
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--name=mevem",
         "--onefile",
+        "--noconfirm",
+        "--clean",
+        "--exclude-module=matplotlib",
+        "--exclude-module=IPython",
+        "--exclude-module=jupyter",
+        "--exclude-module=notebook",
+        "--exclude-module=PyQt5",
+        "--exclude-module=PyQt6", 
+        "--exclude-module=PySide2",
+        "--exclude-module=PySide6",
+        "--exclude-module=tkinter",
+        "--exclude-module=PIL.ImageTk",
         "--add-data=templates:templates",
         "--add-data=static:static" if (base_dir / "static").exists() else "",
         "--hidden-import=pandas",
@@ -36,8 +48,9 @@ def build_linux():
         "--hidden-import=flask_socketio",
         "--hidden-import=engineio",
         "--hidden-import=socketio",
-        "--hidden-import=python_socketio",
-        "--hidden-import=python_engineio",
+        "--hidden-import=engineio.server",
+        "--hidden-import=socketio.server", 
+        "--hidden-import=engineio.async_drivers.threading",
         "--hidden-import=serial",
         "--hidden-import=serial.tools.list_ports",
         "--hidden-import=threading",
