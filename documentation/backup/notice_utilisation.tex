@@ -1,0 +1,784 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{longtable}
+
+% Configuration des pages
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{MEVEM - Notice d'utilisation}
+
+% Configuration des liens
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={MEVEM - Notice d'utilisation},
+    pdfauthor={MEVEM Team}
+}
+
+% Configuration des listings de code
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red}
+}
+
+\title{%
+    \vspace{-2cm}
+    % \includegraphics[width=0.3\textwidth]{logo_mevem.png}\\[1cm] % Remplacer par votre logo
+    {\Large LOGO MEVEM}\\[1cm]
+    {\Huge \textbf{MEVEM}}\\[0.5cm]
+    {\Large Mesure de la verse du maïs}\\[0.3cm]
+    {\Large \textbf{NOTICE D'UTILISATION}}\\[0.5cm]
+    {\normalsize Version 1.0}
+}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+% =====================================
+% PRÉSENTATION GÉNÉRALE
+% =====================================
+\section{Présentation générale}
+
+\subsection{Vue d'ensemble}
+
+MEVEM (Mesure de la verse du maïs) est un système complet de mesure et d'analyse de la résistance à la verse des plants de maïs. Le système combine :
+
+\begin{itemize}
+    \item Une interface mécanique de mesure avec capteurs d'angle et de force
+    \item Un logiciel d'acquisition et d'analyse en temps réel
+    \item Un système de calibration intégré
+    \item Des outils d'export et d'analyse des données
+\end{itemize}
+
+\subsection{Principe de fonctionnement}
+
+Le système MEVEM mesure simultanément :
+\begin{itemize}
+    \item \textbf{L'angle d'inclinaison} du plant lors de l'application d'une force (capteur d'angle)
+    \item \textbf{La force appliquée} nécessaire pour incliner le plant (capteur de force)
+\end{itemize}
+
+Ces mesures permettent d'établir des courbes force-angle caractéristiques de la résistance à la verse.
+
+\subsection{Contenu de la livraison}
+
+\begin{itemize}
+    \item Dispositif de mesure MEVEM avec capteurs intégrés
+    \item Câble USB de connexion
+    \item Logiciel MEVEM (exécutable Windows/Linux)
+    \item Documentation technique et notice d'utilisation
+    \item Étalons de calibration (masses et supports d'angle)
+\end{itemize}
+
+% =====================================
+% INSTALLATION ET CONFIGURATION
+% =====================================
+\section{Installation et configuration}
+
+\subsection{Prérequis système}
+
+\subsubsection{Configuration minimale}
+\begin{itemize}
+    \item \textbf{Système d'exploitation :} Windows 10+ ou Linux Ubuntu 18.04+
+    \item \textbf{Mémoire :} 4 GB RAM minimum
+    \item \textbf{Espace disque :} 200 MB disponibles
+    \item \textbf{Connectivité :} Port USB 2.0 disponible
+    \item \textbf{Navigateur :} Chrome, Firefox, Safari ou Edge (version récente)
+\end{itemize}
+
+\subsection{Installation du logiciel}
+
+\subsubsection{Installation rapide (recommandée)}
+
+\begin{enumerate}
+    \item Téléchargez l'exécutable MEVEM correspondant à votre système :
+    \begin{itemize}
+        \item \texttt{mevem\_windows.exe} pour Windows
+        \item \texttt{mevem\_linux} pour Linux
+    \end{itemize}
+    
+    \item Placez l'exécutable dans un dossier dédié
+    
+    \item \textbf{Linux uniquement :} Rendez le fichier exécutable :
+    \begin{lstlisting}[language=bash]
+chmod +x mevem_linux
+    \end{lstlisting}
+\end{enumerate}
+
+\subsubsection{Configuration des permissions (Linux)}
+
+Sur Linux, il est nécessaire de configurer les permissions d'accès aux ports série :
+
+\begin{enumerate}
+    \item Ajoutez votre utilisateur au groupe \texttt{dialout} :
+    \begin{lstlisting}[language=bash]
+sudo usermod -a -G dialout $USER
+    \end{lstlisting}
+    
+    \item Redémarrez votre session (déconnexion/reconnexion)
+    
+    \item Vérifiez la configuration :
+    \begin{lstlisting}[language=bash]
+groups $USER
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Connexion du matériel}
+
+\begin{enumerate}
+    \item Connectez le dispositif MEVEM à votre ordinateur via le câble USB fourni
+    \item Le système détecte automatiquement les ports série disponibles
+    \item Les ports testés automatiquement sont :
+    \begin{itemize}
+        \item \textbf{Windows :} COM3, COM4, COM5
+        \item \textbf{Linux :} /dev/ttyUSB0, /dev/ttyUSB1, /dev/ttyACM0
+    \end{itemize}
+\end{enumerate}
+
+% =====================================
+% PREMIÈRE UTILISATION
+% =====================================
+\section{Première utilisation}
+
+\subsection{Démarrage du système}
+
+\begin{enumerate}
+    \item Lancez l'exécutable MEVEM :
+    \begin{itemize}
+        \item \textbf{Windows :} Double-cliquez sur \texttt{mevem\_windows.exe}
+        \item \textbf{Linux :} Exécutez \texttt{./mevem\_linux} dans un terminal
+    \end{itemize}
+    
+    \item L'interface web s'ouvre automatiquement dans votre navigateur par défaut
+    \item URL d'accès manuel : \url{http://127.0.0.1:5000}
+\end{enumerate}
+
+\subsection{Interface utilisateur}
+
+L'interface MEVEM se compose de plusieurs éléments principaux :
+
+% Insérer ici une image de l'interface complète
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering [IMAGE: Interface principale de MEVEM] \\ 
+    Insérez ici la capture d'écran de l'interface complète}}
+    \caption{Interface principale de MEVEM}
+    \label{fig:interface_principale}
+\end{figure}
+
+\subsubsection{Panneau de contrôle}
+
+Le panneau de contrôle situé en haut de l'interface comprend :
+
+\begin{itemize}
+    \item \textbf{Démarrer mesure :} Lance l'acquisition de données
+    \item \textbf{Arrêter mesure :} Arrête l'acquisition en cours
+    \item \textbf{Effacer données :} Supprime les données actuelles
+    \item \textbf{Exporter Excel :} Sauvegarde les données au format Excel
+    \item \textbf{Calibrer capteurs :} Lance la procédure de calibration
+    \item \textbf{Actualiser statut :} Rafraîchit l'état de connexion
+\end{itemize}
+
+\subsubsection{Zone d'affichage}
+
+\begin{itemize}
+    \item \textbf{Graphique principal :} Courbe force vs angle en temps réel
+    \item \textbf{Panneau d'information :} État de connexion et calibration
+    \item \textbf{Statistiques :} Durée, amplitude, force maximale
+\end{itemize}
+
+% =====================================
+% CALIBRATION
+% =====================================
+\section{Calibration des capteurs}
+
+\subsection{Importance de la calibration}
+
+La calibration est \textbf{obligatoire} avant toute mesure. Elle permet :
+\begin{itemize}
+    \item D'assurer la précision des mesures
+    \item De convertir les valeurs brutes des capteurs en unités physiques
+    \item De compenser les variations liées à l'environnement
+\end{itemize}
+
+\subsection{Procédure de calibration}
+
+\subsubsection{Préparation}
+
+Avant de commencer la calibration, assurez-vous de disposer de :
+\begin{itemize}
+    \item Étalons d'angle : supports à 0° et 45°
+    \item Masse étalon : poids de 1,000 kg ± 0,001 kg
+    \item Surface plane et stable
+\end{itemize}
+
+\subsubsection{Étapes de calibration}
+
+\begin{enumerate}
+    \item Cliquez sur le bouton \textbf{Calibrer capteurs}
+    
+    \item \textbf{Calibration de l'angle :}
+    \begin{enumerate}
+        \item Placez le dispositif en position horizontale (0°)
+        % Insérer image position 0°
+        \begin{figure}[H]
+            \centering
+            \fbox{\parbox{0.6\textwidth}{\centering [IMAGE: Position 0°] \\ 
+            Dispositif en position horizontale}}
+            \caption{Position de calibration à 0°}
+            \label{fig:calib_0}
+        \end{figure}
+        
+        \item Appuyez sur "Entrée" quand la position est stable
+        \item Inclinez le dispositif à exactement 45°
+        % Insérer image position 45°
+        \begin{figure}[H]
+            \centering
+            \fbox{\parbox{0.6\textwidth}{\centering [IMAGE: Position 45°] \\ 
+            Dispositif incliné à 45°}}
+            \caption{Position de calibration à 45°}
+            \label{fig:calib_45}
+        \end{figure}
+        
+        \item Appuyez sur "Entrée" quand la position est stable
+    \end{enumerate}
+    
+    \item \textbf{Calibration de la force :}
+    \begin{enumerate}
+        \item Retirez toute charge du capteur (position à vide)
+        % Insérer image capteur à vide
+        \begin{figure}[H]
+            \centering
+            \fbox{\parbox{0.6\textwidth}{\centering [IMAGE: Capteur à vide] \\ 
+            Capteur sans charge}}
+            \caption{Capteur de force à vide}
+            \label{fig:calib_vide}
+        \end{figure}
+        
+        \item Appuyez sur "Entrée" pour enregistrer le zéro
+        \item Placez exactement 1,000 kg sur le capteur
+        % Insérer image avec masse 1kg
+        \begin{figure}[H]
+            \centering
+            \fbox{\parbox{0.6\textwidth}{\centering [IMAGE: Masse 1kg] \\ 
+            Masse de 1kg sur le capteur}}
+            \caption{Calibration avec masse de 1 kg}
+            \label{fig:calib_1kg}
+        \end{figure}
+        
+        \item Appuyez sur "Entrée" pour finaliser
+    \end{enumerate}
+    
+    \item La calibration est automatiquement sauvegardée
+\end{enumerate}
+
+\subsection{Vérification de la calibration}
+
+Après calibration, vérifiez que :
+\begin{itemize}
+    \item Les voyants de statut passent au vert
+    \item Les valeurs affichées correspondent aux références utilisées
+    \item La calibration est marquée comme "Calibré" dans l'interface
+\end{itemize}
+
+% =====================================
+% RÉALISATION DES MESURES
+% =====================================
+\section{Réalisation des mesures}
+
+\subsection{Préparation de la mesure}
+
+\begin{enumerate}
+    \item Vérifiez que la calibration est effectuée et valide
+    \item Placez le plant de maïs dans le dispositif de mesure
+    \item Assurez-vous que le plant est bien maintenu et stable
+    \item Vérifiez l'affichage des valeurs en temps réel
+\end{enumerate}
+
+\subsection{Acquisition des données}
+
+\begin{enumerate}
+    \item Cliquez sur \textbf{Démarrer mesure}
+    \item Appliquez progressivement la force sur le plant
+    \item Observez la courbe se dessiner en temps réel sur le graphique
+    % Insérer image du graphique en cours d'acquisition
+    \begin{figure}[H]
+        \centering
+        \fbox{\parbox{0.8\textwidth}{\centering [IMAGE: Graphique temps réel] \\ 
+        Courbe force vs angle en cours d'acquisition}}
+        \caption{Acquisition de données en temps réel}
+        \label{fig:mesure_cours}
+    \end{figure}
+    
+    \item Continuez jusqu'à la rupture ou la limite souhaitée
+    \item Cliquez sur \textbf{Arrêter mesure}
+\end{enumerate}
+
+\subsection{Paramètres de mesure}
+
+\subsubsection{Fenêtre de moyennage}
+
+Le système effectue une moyenne glissante sur les mesures pour réduire le bruit :
+\begin{itemize}
+    \item \textbf{Valeur par défaut :} 25 échantillons
+    \item \textbf{Plage réglable :} 1 à 100 échantillons
+    \item \textbf{Impact :} Plus la fenêtre est large, plus la courbe est lissée
+\end{itemize}
+
+Pour modifier ce paramètre :
+\begin{enumerate}
+    \item Accédez aux paramètres dans l'interface
+    \item Ajustez la "Fenêtre de moyennage"
+    \item Validez le changement
+\end{enumerate}
+
+\subsection{Qualité des mesures}
+
+Pour obtenir des mesures de qualité :
+\begin{itemize}
+    \item Effectuez l'application de force de manière progressive et constante
+    \item Évitez les à-coups et les vibrations
+    \item Surveillez la stabilité des valeurs avant de commencer
+    \item Arrêtez la mesure dès que la rupture est atteinte
+\end{itemize}
+
+% =====================================
+% ANALYSE ET EXPORT DES DONNÉES
+% =====================================
+\section{Analyse et export des données}
+
+\subsection{Visualisation des résultats}
+
+Le graphique principal affiche :
+\begin{itemize}
+    \item \textbf{Axe X :} Angle d'inclinaison (en degrés)
+    \item \textbf{Axe Y :} Force appliquée (en kg)
+    \item \textbf{Courbe :} Évolution de la force en fonction de l'angle
+\end{itemize}
+
+Les informations statistiques incluent :
+\begin{itemize}
+    \item Durée totale de la mesure
+    \item Nombre de points acquis
+    \item Angle maximum atteint
+    \item Force maximum appliquée
+    \item Amplitude des mesures
+\end{itemize}
+
+\subsection{Export des données}
+
+\subsubsection{Format Excel}
+
+L'export Excel génère un fichier contenant :
+
+\begin{itemize}
+    \item \textbf{Feuille "Mesures MEVEM" :}
+    \begin{itemize}
+        \item Timestamp (temps relatif)
+        \item Angle (degrés)
+        \item Force (kg)
+        \item Valeurs brutes des capteurs
+        \item Nombre d'échantillons moyennés
+    \end{itemize}
+    
+    \item \textbf{Feuille "Métadonnées" :}
+    \begin{itemize}
+        \item Date et heure de la mesure
+        \item Paramètres de calibration
+        \item Statistiques de la session
+        \item Configuration du système
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Procédure d'export}
+
+\begin{enumerate}
+    \item Après avoir terminé une mesure, cliquez sur \textbf{Exporter Excel}
+    \item Choisissez l'emplacement de sauvegarde
+    \item Le fichier est nommé automatiquement avec la date et l'heure
+    \item Format : \texttt{mevem\_mesure\_AAAAMMJJ\_HHMMSS.xlsx}
+\end{enumerate}
+
+% =====================================
+% RÉSOLUTION DE PROBLÈMES
+% =====================================
+\section{Résolution de problèmes}
+
+\subsection{Problèmes de connexion}
+
+\subsubsection{Le capteur n'est pas détecté}
+
+\textbf{Symptômes :}
+\begin{itemize}
+    \item Voyant de connexion rouge
+    \item Message "Aucun capteur détecté"
+    \item Impossible de démarrer une mesure
+\end{itemize}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Vérifiez la connexion USB du dispositif
+    \item Redémarrez l'application MEVEM
+    \item Testez sur un autre port USB
+    \item Vérifiez les permissions (Linux) :
+    \begin{lstlisting}[language=bash]
+ls -l /dev/ttyUSB*
+groups $USER | grep dialout
+    \end{lstlisting}
+\end{enumerate}
+
+\subsubsection{Port série occupé}
+
+\textbf{Symptômes :}
+\begin{itemize}
+    \item Message "Port occupé par une autre application"
+    \item Connexion intermittente
+\end{itemize}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Fermez toutes les applications utilisant des ports série
+    \item Débranchez et rebranchez le dispositif USB
+    \item Sur Linux, vérifiez les processus utilisant le port :
+    \begin{lstlisting}[language=bash]
+sudo lsof /dev/ttyUSB0
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Problèmes de calibration}
+
+\subsubsection{Échec de la calibration}
+
+\textbf{Symptômes :}
+\begin{itemize}
+    \item Message d'erreur during la procédure
+    \item Valeurs aberrantes après calibration
+    \item Impossibilité de terminer la calibration
+\end{itemize}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Vérifiez la stabilité du dispositif pendant la calibration
+    \item Assurez-vous que les étalons sont corrects (0°, 45°, 1 kg)
+    \item Répétez la procédure de calibration
+    \item Vérifiez l'absence de vibrations durant la calibration
+\end{enumerate}
+
+\subsubsection{Dérive des mesures}
+
+\textbf{Symptômes :}
+\begin{itemize}
+    \item Valeurs qui dérivent au fil du temps
+    \item Différences importantes entre mesures successives
+    \item Zéro instable
+\end{itemize}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Laissez le système se stabiliser 5-10 minutes après démarrage
+    \item Refaites une calibration complète
+    \item Vérifiez la température ambiante (évitez les variations)
+    \item Contrôlez l'absence de courants d'air
+\end{enumerate}
+
+\subsection{Problèmes d'interface}
+
+\subsubsection{L'interface web ne se charge pas}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Accédez manuellement à \url{http://127.0.0.1:5000}
+    \item Vérifiez que le port 5000 n'est pas utilisé par une autre application
+    \item Redémarrez l'application MEVEM
+    \item Testez avec un autre navigateur web
+\end{enumerate}
+
+\subsubsection{Graphique figé ou non mis à jour}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Actualisez la page web (F5)
+    \item Vérifiez la connexion WebSocket dans la console du navigateur
+    \item Redémarrez l'application
+    \item Cliquez sur \textbf{Actualiser statut}
+\end{enumerate}
+
+\subsection{Problèmes de performance}
+
+\subsubsection{Acquisition lente ou saccadée}
+
+\textbf{Causes possibles :}
+\begin{itemize}
+    \item Processeur surchargé
+    \item Fenêtre de moyennage trop importante
+    \item Problèmes de communication série
+\end{itemize}
+
+\textbf{Solutions :}
+\begin{enumerate}
+    \item Fermez les applications inutiles
+    \item Réduisez la fenêtre de moyennage
+    \item Utilisez un câble USB de meilleure qualité
+    \item Évitez les hubs USB non alimentés
+\end{enumerate}
+
+% =====================================
+% MAINTENANCE
+% =====================================
+\section{Maintenance}
+
+\subsection{Maintenance préventive}
+
+\subsubsection{Vérifications régulières}
+
+\textbf{Quotidienne :}
+\begin{itemize}
+    \item Vérification visuelle du dispositif
+    \item Test de la connexion USB
+    \item Contrôle des valeurs au repos
+\end{itemize}
+
+\textbf{Hebdomadaire :}
+\begin{itemize}
+    \item Nettoyage du dispositif avec un chiffon sec
+    \item Vérification de la calibration avec les étalons
+    \item Sauvegarde des fichiers de calibration
+\end{itemize}
+
+\textbf{Mensuelle :}
+\begin{itemize}
+    \item Calibration complète du système
+    \item Mise à jour du logiciel si disponible
+    \item Archivage des données importantes
+\end{itemize}
+
+\subsection{Maintenance curative}
+
+\subsubsection{Nettoyage du dispositif}
+
+\begin{enumerate}
+    \item Débranchez le dispositif de l'alimentation USB
+    \item Nettoyez les surfaces avec un chiffon légèrement humide
+    \item Évitez tout liquide près des connecteurs électroniques
+    \item Séchez complètement avant reconnexion
+\end{enumerate}
+
+\subsubsection{Remplacement des étalons}
+
+Si les étalons sont endommagés :
+\begin{enumerate}
+    \item Contactez le support technique pour obtenir des étalons certifiés
+    \item Ne pas utiliser d'étalons approximatifs
+    \item Respectez la procédure de calibration avec les nouveaux étalons
+\end{enumerate}
+
+% =====================================
+% CARACTÉRISTIQUES TECHNIQUES
+% =====================================
+\section{Caractéristiques techniques}
+
+\subsection{Spécifications des capteurs}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Paramètre} & \textbf{Capteur d'angle} & \textbf{Capteur de force} \\
+\hline
+Plage de mesure & 0° à 90° & 0 à 10 kg \\
+\hline
+Résolution & 0,1° & 1 g \\
+\hline
+Précision & ±0,5° & ±0,5\% PE \\
+\hline
+Linéarité & <1\% PE & <0,5\% PE \\
+\hline
+Dérive thermique & <0,1°/°C & <0,01\%/°C \\
+\hline
+Fréquence d'acquisition & \multicolumn{2}{|c|}{100 Hz} \\
+\hline
+\end{tabular}
+\caption{Spécifications des capteurs}
+\label{tab:specs_capteurs}
+\end{table}
+
+\subsection{Interface de communication}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Paramètre} & \textbf{Valeur} \\
+\hline
+Interface & USB 2.0 (série virtuelle) \\
+\hline
+Vitesse & 115200 bauds \\
+\hline
+Format des données & 8 bits, pas de parité, 1 bit de stop \\
+\hline
+Protocole & VeTiMa, iMa, Ta \\
+\hline
+Longueur du câble & 2 mètres \\
+\hline
+\end{tabular}
+\caption{Spécifications de communication}
+\label{tab:specs_comm}
+\end{table}
+
+\subsection{Alimentation et consommation}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Paramètre} & \textbf{Valeur} \\
+\hline
+Alimentation & 5V via USB \\
+\hline
+Consommation nominale & 200 mA \\
+\hline
+Consommation max & 350 mA \\
+\hline
+\end{tabular}
+\caption{Caractéristiques électriques}
+\label{tab:specs_elec}
+\end{table}
+
+% =====================================
+% CONTACT ET SUPPORT
+% =====================================
+\section{Contact et support}
+
+\subsection{Support technique}
+
+Pour toute question technique ou problème d'utilisation :
+
+\begin{itemize}
+    \item \textbf{Email :} support@mevem.fr
+    \item \textbf{Téléphone :} +33 (0)1 XX XX XX XX
+    \item \textbf{Horaires :} 9h-17h, du lundi au vendredi
+    \item \textbf{Documentation en ligne :} \url{https://docs.mevem.fr}
+\end{itemize}
+
+\subsection{Mises à jour}
+
+Les mises à jour du logiciel sont disponibles sur :
+\begin{itemize}
+    \item \textbf{Site web :} \url{https://www.mevem.fr/downloads}
+    \item \textbf{Notifications automatiques} dans l'application
+\end{itemize}
+
+\subsection{Garantie}
+
+\begin{itemize}
+    \item \textbf{Durée :} 2 ans pièces et main d'œuvre
+    \item \textbf{Couverture :} Défauts de fabrication et composants
+    \item \textbf{Exclusions :} Dommages dus à une mauvaise utilisation
+\end{itemize}
+
+% =====================================
+% ANNEXES
+% =====================================
+\section{Annexes}
+
+\subsection{Annexe A : Messages d'erreur}
+
+\begin{longtable}{|p{4cm}|p{5cm}|p{5cm}|}
+\hline
+\textbf{Message} & \textbf{Cause} & \textbf{Solution} \\
+\hline
+\endhead
+"Permission refusée" & Droits insuffisants sur le port série & Ajouter l'utilisateur au groupe dialout \\
+\hline
+"Port occupé" & Autre application utilise le port & Fermer les applications concurrentes \\
+\hline
+"Calibration échouée" & Instabilité pendant la calibration & Répéter avec plus de stabilité \\
+\hline
+"Connexion perdue" & Débranchement du dispositif & Vérifier la connexion USB \\
+\hline
+"Valeurs aberrantes" & Problème de capteur & Recalibrer ou contacter le support \\
+\hline
+\end{longtable}
+
+\subsection{Annexe B : Formats de données}
+
+\subsubsection{Format du fichier de calibration}
+
+\begin{lstlisting}
+{
+  "angle": {
+    "raw_min": 0,
+    "raw_max": 1023,
+    "real_min": 0.0,
+    "real_max": 45.0,
+    "calibrated": true
+  },
+  "force": {
+    "raw_min": 0,
+    "raw_max": 1023,
+    "real_min": 0.0,
+    "real_max": 1.0,
+    "calibrated": true
+  }
+}
+\end{lstlisting}
+
+\subsection{Annexe C : Raccourcis clavier}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Raccourci} & \textbf{Action} \\
+\hline
+F5 & Actualiser l'interface \\
+\hline
+Ctrl+S & Exporter les données \\
+\hline
+Espace & Démarrer/Arrêter la mesure \\
+\hline
+Échap & Annuler l'opération en cours \\
+\hline
+\end{tabular}
+\caption{Raccourcis clavier disponibles}
+\label{tab:shortcuts}
+\end{table}
+
+\end{document}

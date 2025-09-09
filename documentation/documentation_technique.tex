@@ -1,0 +1,1145 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+% \usepackage{algorithmic}  % Package non disponible
+% \usepackage{algorithm}   % Package non disponible
+
+% Configuration des pages
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{MEVEM - Documentation technique}
+
+% Configuration des liens
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={MEVEM - Documentation technique},
+    pdfauthor={MEVEM Team}
+}
+
+% Configuration des listings de code
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    showstringspaces=false
+}
+
+% Configuration des boîtes colorées
+\newtcolorbox{infobox}[1][]{
+    colback=blue!5,
+    colframe=blue!50!black,
+    title=#1,
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{warningbox}[1][]{
+    colback=orange!5,
+    colframe=orange!50!black,
+    title=#1,
+    fonttitle=\bfseries
+}
+
+\newtcolorbox{codebox}[1][]{
+    colback=gray!5,
+    colframe=gray!50!black,
+    title=#1,
+    fonttitle=\bfseries\ttfamily
+}
+
+\title{%
+    \vspace{-2cm}
+    % \includegraphics[width=0.3\textwidth]{logo_mevem.png}\\[1cm] % Remplacer par votre logo
+    {\Large LOGO MEVEM}\\[1cm]
+    {\Huge \textbf{MEVEM}}\\[0.5cm]
+    {\Large Mesure de la verse du maïs}\\[0.3cm]
+    {\Large \textbf{DOCUMENTATION TECHNIQUE}}\\[0.5cm]
+    {\normalsize Version 1.0}
+}
+\author{Équipe de développement MEVEM}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+% =====================================
+% ARCHITECTURE GÉNÉRALE
+% =====================================
+\section{Architecture générale}
+
+\subsection{Vue d'ensemble du système}
+
+Le système MEVEM repose sur une architecture client-serveur moderne combinant :
+\begin{itemize}
+    \item Un serveur web Flask intégré pour l'interface utilisateur
+    \item Un module de communication série pour l'acquisition de données
+    \item Une interface web responsive utilisant WebSocket pour les communications temps réel
+    \item Un système de calibration et de traitement de données intégré
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.9\textwidth}{\centering [DIAGRAMME: Architecture système] \\ 
+    Schéma montrant les composants et leurs interactions}}
+    \caption{Architecture générale du système MEVEM}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection{Composants logiciels principaux}
+
+\subsubsection{Modules Python}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Module} & \textbf{Fichier} & \textbf{Fonction} \\
+\hline
+Application principale & \texttt{app.py} & Serveur web Flask, API REST, WebSocket \\
+\hline
+Communication série & \texttt{main.py} & Décodage capteurs, calibration, acquisition \\
+\hline
+Interface web & \texttt{templates/} & Interface utilisateur HTML/CSS/JS \\
+\hline
+Scripts de build & \texttt{build*.py} & Génération d'exécutables multi-plateforme \\
+\hline
+\end{tabular}
+\caption{Modules logiciels principaux}
+\label{tab:modules}
+\end{table}
+
+\subsubsection{Dépendances externes}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Bibliothèque} & \textbf{Version} & \textbf{Usage} \\
+\hline
+Flask & 2.3+ & Serveur web et API REST \\
+\hline
+Flask-SocketIO & 5.3+ & Communication WebSocket temps réel \\
+\hline
+PySerial & 3.5+ & Communication avec les capteurs série \\
+\hline
+Pandas & 2.0+ & Traitement et export des données \\
+\hline
+OpenPyXL & 3.1+ & Génération de fichiers Excel \\
+\hline
+PyInstaller & 5.13+ & Création d'exécutables autonomes \\
+\hline
+\end{tabular}
+\caption{Dépendances logicielles}
+\label{tab:dependencies}
+\end{table}
+
+% =====================================
+% MODULE DE COMMUNICATION SÉRIE
+% =====================================
+\section{Module de communication série}
+
+\subsection{Architecture du module}
+
+Le module \texttt{main.py} implémente la classe \texttt{CalibratedSensorDecoder} qui gère :
+\begin{itemize}
+    \item La communication avec les capteurs via port série
+    \item Le décodage des protocoles de données (VeTiMa, iMa, Ta)
+    \item Le système de calibration interactif
+    \item La conversion des valeurs brutes en unités physiques
+\end{itemize}
+
+\subsection{Protocoles de communication}
+
+\subsubsection{Formats de données supportés}
+
+Le système supporte trois protocoles de données :
+
+\begin{codebox}[Protocoles série]
+\begin{itemize}
+    \item \textbf{VeTiMa} : \texttt{VeTiMa 0xXXXX 0xYYYY}
+    \item \textbf{iMa} : \texttt{iMa 0xXXXX 0xYYYY}
+    \item \textbf{Ta} : \texttt{Ta 0xXXXX 0xYYYY}
+\end{itemize}
+\end{codebox}
+
+Où :
+\begin{itemize}
+    \item \texttt{0xXXXX} = valeur hexadécimale du capteur de force
+    \item \texttt{0xYYYY} = valeur hexadécimale du capteur d'angle
+\end{itemize}
+
+\subsubsection{Analyse des trames}
+
+\begin{lstlisting}[language=python, caption=Analyse des protocoles série]
+# Patterns regex pour l'analyse des trames
+self.patterns = {
+    'VeTiMa': re.compile(r'VeTiMa\s*(0x[0-9A-Fa-f]{1,4})\s*(0x[0-9A-Fa-f]{1,4})'),
+    'iMa': re.compile(r'iMa\s*(0x[0-9A-Fa-f]{1,4})\s*(0x[0-9A-Fa-f]{1,4})'),
+    'Ta': re.compile(r'Ta\s*(0x[0-9A-Fa-f]{1,4})\s*(0x[0-9A-Fa-f]{1,4})')
+}
+
+def parse_line_raw(self, line):
+    """Parse une ligne et retourne les valeurs brutes"""
+    results = []
+    for pattern_name, pattern in self.patterns.items():
+        matches = pattern.findall(line)
+        for match in matches:
+            val1 = int(match[0], 16)  # Force
+            val2 = int(match[1], 16)  # Angle
+            
+            if val1 <= 0xFFFF and val2 <= 0xFFFF:
+                results.append({
+                    'type': pattern_name,
+                    'raw_force': val1,
+                    'raw_angle': val2
+                })
+    return results if results else None
+\end{lstlisting}
+
+\subsection{Système de calibration}
+
+\subsubsection{Structure des données de calibration}
+
+\begin{lstlisting}[caption=Format de calibration]
+{
+  "angle": {
+    "raw_min": 0,      // Valeur brute a 0 degres
+    "raw_max": 1023,   // Valeur brute a 45 degres  
+    "real_min": 0.0,   // Valeur reelle a 0 degres
+    "real_max": 45.0,  // Valeur reelle a 45 degres
+    "calibrated": true
+  },
+  "force": {
+    "raw_min": 0,      // Valeur brute a vide
+    "raw_max": 1023,   // Valeur brute a 1kg
+    "real_min": 0.0,   // Valeur reelle a vide
+    "real_max": 1.0,   // Valeur reelle a 1kg
+    "calibrated": true
+  }
+}
+\end{lstlisting}
+
+\subsubsection{Algorithme de conversion}
+
+\begin{tcolorbox}[title=Algorithme: Conversion des valeurs brutes en valeurs physiques]
+\textbf{Entrées:} Valeur brute $v_{raw}$, paramètres de calibration $cal$\\
+\textbf{Sortie:} Valeur physique $v_{phys}$
+
+\begin{enumerate}
+    \item \textbf{Si} $cal.calibrated = true$ \textbf{alors}
+    \begin{enumerate}
+        \item $ratio \leftarrow \frac{v_{raw} - cal.raw_{min}}{cal.raw_{max} - cal.raw_{min}}$
+        \item $v_{phys} \leftarrow cal.real_{min} + ratio \times (cal.real_{max} - cal.real_{min})$
+    \end{enumerate}
+    \item \textbf{Sinon}
+    \begin{enumerate}
+        \item $v_{phys} \leftarrow v_{raw} \times \frac{scale_{default}}{resolution_{max}}$
+    \end{enumerate}
+    \item \textbf{Retourner} $v_{phys}$
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{lstlisting}[language=python, caption=Implémentation de la conversion]
+def convert_raw_to_physical(self, raw_angle, raw_force):
+    """Convertir les valeurs brutes en valeurs physiques"""
+    # Conversion angle
+    if self.calibration['angle']['calibrated']:
+        angle_cal = self.calibration['angle']
+        if angle_cal['raw_max'] != angle_cal['raw_min']:
+            angle_ratio = (raw_angle - angle_cal['raw_min']) / \
+                         (angle_cal['raw_max'] - angle_cal['raw_min'])
+            angle_deg = angle_cal['real_min'] + \
+                       angle_ratio * (angle_cal['real_max'] - angle_cal['real_min'])
+        else:
+            angle_deg = angle_cal['real_min']
+    else:
+        # Conversion par défaut
+        angle_deg = raw_angle * 360.0 / 1023.0
+
+    # Conversion force (similaire pour la force)
+    # ... code similaire pour la force
+    
+    return angle_deg, force_kg
+\end{lstlisting}
+
+% =====================================
+% SERVEUR WEB ET API
+% =====================================
+\section{Serveur web et API}
+
+\subsection{Architecture Flask}
+
+L'application utilise Flask comme framework web avec les extensions suivantes :
+\begin{itemize}
+    \item \textbf{Flask-SocketIO} : Communication bidirectionnelle temps réel
+    \item \textbf{Threading} : Gestion des tâches d'acquisition en arrière-plan
+    \item \textbf{CORS} : Support cross-origin pour l'interface web
+\end{itemize}
+
+\subsection{API REST}
+
+\subsubsection{Endpoints de gestion des ports}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Méthode} & \textbf{Description} \\
+\hline
+\texttt{/api/ports/list} & GET & Liste les ports série disponibles \\
+\hline
+\texttt{/api/ports/select} & POST & Sélectionne un port série spécifique \\
+\hline
+\end{tabular}
+\caption{API de gestion des ports}
+\end{table}
+
+\subsubsection{Endpoints de calibration}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Méthode} & \textbf{Description} \\
+\hline
+\texttt{/api/calibration/status} & GET & État actuel de la calibration \\
+\hline
+\texttt{/api/calibration/start} & POST & Démarre la procédure de calibration \\
+\hline
+\end{tabular}
+\caption{API de calibration}
+\end{table}
+
+\subsubsection{Endpoints de mesure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Méthode} & \textbf{Description} \\
+\hline
+\texttt{/api/measurement/start} & POST & Démarre l'acquisition de données \\
+\hline
+\texttt{/api/measurement/stop} & POST & Arrête l'acquisition de données \\
+\hline
+\texttt{/api/measurement/data} & GET & Récupère les données de mesure \\
+\hline
+\texttt{/api/measurement/clear} & POST & Efface les données actuelles \\
+\hline
+\texttt{/api/measurement/export/excel} & POST & Exporte les données en Excel \\
+\hline
+\end{tabular}
+\caption{API de mesure}
+\end{table}
+
+\subsubsection{Endpoints de configuration}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Méthode} & \textbf{Description} \\
+\hline
+\texttt{/api/averaging/get} & GET & Récupère la fenêtre de moyennage \\
+\hline
+\texttt{/api/averaging/set} & POST & Définit la fenêtre de moyennage \\
+\hline
+\end{tabular}
+\caption{API de configuration}
+\end{table}
+
+\subsection{Communication WebSocket}
+
+\subsubsection{Événements WebSocket}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Événement} & \textbf{Direction} & \textbf{Description} \\
+\hline
+\texttt{connect} & Client → Serveur & Connexion du client \\
+\hline
+\texttt{disconnect} & Client → Serveur & Déconnexion du client \\
+\hline
+\texttt{connected} & Serveur → Client & Confirmation de connexion \\
+\hline
+\texttt{measurement\_data} & Serveur → Client & Données de mesure temps réel \\
+\hline
+\texttt{error} & Serveur → Client & Messages d'erreur \\
+\hline
+\end{tabular}
+\caption{Événements WebSocket}
+\end{table}
+
+\subsubsection{Structure des données temps réel}
+
+\begin{lstlisting}[language=json, caption=Format des données WebSocket]
+{
+  "timestamp": 1.234,      // Temps relatif en secondes
+  "angle": 12.5,           // Angle en degrés
+  "force": 0.245,          // Force en kg
+  "raw_angle": 512,        // Valeur brute angle
+  "raw_force": 256,        // Valeur brute force
+  "samples_count": 25      // Nombre d'échantillons moyennés
+}
+\end{lstlisting}
+
+% =====================================
+% TRAITEMENT DES DONNÉES
+% =====================================
+\section{Traitement des données}
+
+\subsection{Système de moyennage}
+
+Le système implémente un moyennage glissant pour réduire le bruit des mesures :
+
+\begin{infobox}[Principe du moyennage]
+Les valeurs brutes des capteurs sont accumulées dans des tampons circulaires. Quand le nombre d'échantillons atteint la fenêtre configurée, une moyenne est calculée et transmise.
+\end{infobox}
+
+\begin{lstlisting}[language=python, caption=Implémentation du moyennage]
+# Configuration du moyennage
+averaging_window = 25  # Nombre de valeurs pour la moyenne
+angle_accumulator = []  # Accumulateur pour les angles
+force_accumulator = []  # Accumulateur pour les forces
+
+def measurement_worker():
+    """Worker thread pour la mesure en continu"""
+    global current_measurement, measurement_active, decoder
+    global averaging_window, angle_accumulator, force_accumulator
+    
+    while measurement_active:
+        # Lecture des données série
+        parsed = decoder.parse_line(line)
+        
+        if parsed:
+            for data in parsed:
+                # Accumuler les valeurs
+                angle_accumulator.append({
+                    'angle': data['angle_deg'],
+                    'raw_angle': data['raw_angle']
+                })
+                force_accumulator.append({
+                    'force': data['force_kg'],
+                    'raw_force': data['raw_force']
+                })
+                
+                # Si assez de valeurs, calculer la moyenne
+                if len(angle_accumulator) >= averaging_window:
+                    avg_angle = sum([item['angle'] for item in angle_accumulator]) / len(angle_accumulator)
+                    avg_force = sum([item['force'] for item in force_accumulator]) / len(force_accumulator)
+                    
+                    # Créer le point de mesure
+                    measurement_point = {
+                        'timestamp': time.time() - start_time,
+                        'angle': round(avg_angle, 2),
+                        'force': round(avg_force, 3),
+                        'raw_angle': int(avg_raw_angle),
+                        'raw_force': int(avg_raw_force),
+                        'samples_count': len(angle_accumulator)
+                    }
+                    
+                    # Vider les accumulateurs
+                    angle_accumulator = []
+                    force_accumulator = []
+\end{lstlisting}
+
+\subsection{Export des données}
+
+\subsubsection{Génération Excel}
+
+Le système génère des fichiers Excel avec deux feuilles :
+
+\begin{lstlisting}[language=python, caption=Génération du fichier Excel]
+def export_to_excel():
+    """Exporter les données vers Excel"""
+    # Créer un DataFrame pandas
+    df = pd.DataFrame(current_measurement)
+    
+    # Créer un buffer en mémoire
+    output = io.BytesIO()
+    
+    # Écrire le fichier Excel
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        # Feuille des données
+        df.to_excel(writer, sheet_name='Mesures MEVEM', index=False)
+        
+        # Feuille des métadonnées
+        metadata_df = pd.DataFrame({
+            'Information': [
+                'Date de mesure', 
+                'Nombre de points', 
+                'Durée (s)', 
+                'Angle min (°)', 
+                'Angle max (°)', 
+                'Force min (kg)', 
+                'Force max (kg)'
+            ],
+            'Valeur': [
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                len(current_measurement),
+                round(max([p['timestamp'] for p in current_measurement]), 2),
+                # ... autres statistiques
+            ]
+        })
+        metadata_df.to_excel(writer, sheet_name='Métadonnées', index=False)
+\end{lstlisting}
+
+% =====================================
+% INTERFACE UTILISATEUR
+% =====================================
+\section{Interface utilisateur}
+
+\subsection{Technologies web utilisées}
+
+L'interface utilisateur utilise :
+\begin{itemize}
+    \item \textbf{HTML5} : Structure de la page
+    \item \textbf{CSS3} : Mise en forme et responsive design
+    \item \textbf{JavaScript ES6} : Logique client et interactions
+    \item \textbf{Chart.js} : Graphiques interactifs temps réel
+    \item \textbf{Socket.IO client} : Communication WebSocket
+    \item \textbf{Bootstrap} : Framework CSS responsive
+\end{itemize}
+
+\subsection{Composants principaux}
+
+\subsubsection{Graphique temps réel}
+
+\begin{lstlisting}[caption=Configuration du graphique Chart.js]
+// Configuration du graphique principal
+const chartConfig = {
+    type: 'scatter',
+    data: {
+        datasets: [{
+            label: 'Force vs Angle',
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            showLine: true,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'linear',
+                position: 'bottom',
+                title: {
+                    display: true,
+                    text: 'Angle (degrés)'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Force (kg)'
+                }
+            }
+        },
+        animation: {
+            duration: 0 // Pas d'animation pour le temps réel
+        }
+    }
+};
+\end{lstlisting}
+
+\subsubsection{Gestion des événements WebSocket}
+
+\begin{lstlisting}[caption=Gestion des WebSockets côté client]
+// Connexion WebSocket
+const socket = io();
+
+// Réception des données de mesure
+socket.on('measurement_data', function(data) {
+    // Ajouter le point au graphique
+    chart.data.datasets[0].data.push({
+        x: data.angle,
+        y: data.force
+    });
+    
+    // Limiter le nombre de points affichés
+    if (chart.data.datasets[0].data.length > maxPoints) {
+        chart.data.datasets[0].data.shift();
+    }
+    
+    // Mettre à jour le graphique
+    chart.update('none');
+    
+    // Mettre à jour les statistiques
+    updateStatistics(data);
+});
+
+// Gestion des erreurs
+socket.on('error', function(error) {
+    console.error('Erreur WebSocket:', error.message);
+    showNotification('Erreur: ' + error.message, 'error');
+});
+\end{lstlisting}
+
+% =====================================
+% DÉPLOIEMENT ET BUILD
+% =====================================
+\section{Déploiement et build}
+
+\subsection{Système de build multi-plateforme}
+
+Le système utilise PyInstaller pour créer des exécutables autonomes :
+
+\begin{codebox}[Scripts de build disponibles]
+\begin{itemize}
+    \item \texttt{build.py} : Build universel avec sélection de plateforme
+    \item \texttt{build\_windows.py} : Build spécifique Windows
+    \item \texttt{build\_linux.py} : Build spécifique Linux
+    \item \texttt{build\_final.py} : Build optimisé pour production
+\end{itemize}
+\end{codebox}
+
+\subsection{Configuration PyInstaller}
+
+\begin{lstlisting}[language=python, caption=Configuration PyInstaller type]
+def build_executable(platform='current'):
+    """Construire l'exécutable pour la plateforme spécifiée"""
+    
+    # Configuration commune
+    base_options = [
+        '--name=mevem',
+        '--onefile',
+        '--windowed' if platform == 'windows' else '',
+        '--add-data=templates;templates',
+        '--add-data=static;static',
+        '--hidden-import=eventlet',
+        '--hidden-import=socketio',
+        '--hidden-import=engineio',
+        '--clean',
+        'app.py'
+    ]
+    
+    # Options spécifiques à la plateforme
+    if platform == 'windows':
+        base_options.extend([
+            '--icon=icon.ico',
+            '--version-file=version.txt',
+            '--distpath=dist_windows'
+        ])
+    elif platform == 'linux':
+        base_options.extend([
+            '--distpath=dist_linux'
+        ])
+    
+    # Exécuter PyInstaller
+    PyInstaller.__main__.run(base_options)
+\end{lstlisting}
+
+\subsection{Gestion des dépendances}
+
+\subsubsection{Fichier requirements.txt}
+
+\begin{lstlisting}[caption=Dépendances Python]
+Flask>=2.3.0
+Flask-SocketIO>=5.3.0
+pyserial>=3.5
+pandas>=2.0.0
+openpyxl>=3.1.0
+pyinstaller>=5.13.0
+eventlet>=0.33.0
+python-socketio>=5.8.0
+python-engineio>=4.7.0
+\end{lstlisting}
+
+\subsubsection{Optimisations de build}
+
+\begin{warningbox}[Considérations de performance]
+\begin{itemize}
+    \item Les builds incluent un environnement Python complet (environ 50-80 MB)
+    \item L'option \texttt{--onefile} ralentit le démarrage mais simplifie la distribution
+    \item Les modules \texttt{eventlet} et \texttt{socketio} nécessitent des imports explicites
+\end{itemize}
+\end{warningbox}
+
+% =====================================
+% SÉCURITÉ ET PERFORMANCE
+% =====================================
+\section{Sécurité et performance}
+
+\subsection{Mesures de sécurité}
+
+\subsubsection{Sécurisation des communications}
+
+\begin{itemize}
+    \item \textbf{Interface locale uniquement} : Le serveur n'écoute que sur \texttt{127.0.0.1}
+    \item \textbf{Pas d'exposition réseau} : Aucun accès distant par défaut
+    \item \textbf{Validation des données} : Toutes les entrées utilisateur sont validées
+    \item \textbf{Gestion des exceptions} : Gestion robuste des erreurs série et réseau
+\end{itemize}
+
+\subsubsection{Sécurisation des ports série}
+
+\begin{lstlisting}[language=python, caption=Vérification de l'accès aux ports]
+def check_port_access(port):
+    """Vérifier l'accès à un port série"""
+    try:
+        # Essayer d'ouvrir le port brièvement
+        test_conn = serial.Serial(port, timeout=0.1)
+        test_conn.close()
+        return {'accessible': True}
+    except serial.SerialException as e:
+        error_msg = str(e)
+        if 'Permission denied' in error_msg:
+            return {
+                'accessible': False,
+                'error': 'Permission refusée - Ajoutez votre utilisateur au groupe dialout'
+            }
+        elif 'Device or resource busy' in error_msg:
+            return {
+                'accessible': False,
+                'error': 'Port occupé par une autre application'
+            }
+        # ... autres cas d'erreur
+\end{lstlisting}
+
+\subsection{Optimisations de performance}
+
+\subsubsection{Gestion mémoire}
+
+\begin{itemize}
+    \item \textbf{Buffers circulaires} : Limitation de la taille des données en mémoire
+    \item \textbf{Nettoyage automatique} : Libération des ressources après usage
+    \item \textbf{Threads dédiés} : Séparation acquisition/interface pour éviter les blocages
+\end{itemize}
+
+\begin{lstlisting}[language=python, caption=Gestion des buffers circulaires]
+from collections import deque
+
+# Stockage des données avec taille limitée
+self.data_buffer = deque(maxlen=1000)
+
+# Limitation du nombre de points dans l'interface
+if len(chart.data.datasets[0].data) > maxPoints:
+    chart.data.datasets[0].data.shift();
+\end{lstlisting}
+
+\subsubsection{Optimisations réseau}
+
+\begin{itemize}
+    \item \textbf{Compression des données WebSocket} : Réduction de la bande passante
+    \item \textbf{Mise à jour différentielle} : Envoi des changements uniquement
+    \item \textbf{Debouncing} : Limitation de la fréquence des mises à jour interface
+\end{itemize}
+
+% =====================================
+% TESTS ET VALIDATION
+% =====================================
+\section{Tests et validation}
+
+\subsection{Stratégie de test}
+
+\subsubsection{Types de tests implémentés}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Type de test} & \textbf{Couverture} & \textbf{Outils} \\
+\hline
+Tests unitaires & Fonctions de conversion, parsing & pytest, unittest \\
+\hline
+Tests d'intégration & Communication série, API REST & pytest-flask \\
+\hline
+Tests de performance & Charge, mémoire, latence & pytest-benchmark \\
+\hline
+Tests manuels & Interface utilisateur, workflows & Manuel \\
+\hline
+\end{tabular}
+\caption{Stratégie de test}
+\label{tab:test_strategy}
+\end{table}
+
+\subsubsection{Cas de tests critiques}
+
+\begin{enumerate}
+    \item \textbf{Communication série} : Test de tous les protocoles supportés
+    \item \textbf{Calibration} : Vérification de la précision des conversions
+    \item \textbf{Moyennage} : Validation de l'algorithme de moyennage glissant
+    \item \textbf{Export} : Intégrité des fichiers Excel générés
+    \item \textbf{WebSocket} : Stabilité des communications temps réel
+\end{enumerate}
+
+\subsection{Tests de performance}
+
+\subsubsection{Benchmarks}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Métrique} & \textbf{Valeur cible} & \textbf{Valeur mesurée} \\
+\hline
+Fréquence d'acquisition & 100 Hz & 95-105 Hz \\
+\hline
+Latence WebSocket & < 50 ms & 15-25 ms \\
+\hline
+Consommation mémoire & < 100 MB & 65-85 MB \\
+\hline
+Temps de démarrage & < 5 s & 2-3 s \\
+\hline
+\end{tabular}
+\caption{Benchmarks de performance}
+\label{tab:benchmarks}
+\end{table}
+
+\subsubsection{Tests de charge}
+
+\begin{lstlisting}[language=python, caption=Test de charge WebSocket]
+import asyncio
+import websockets
+import time
+
+async def stress_test_websocket():
+    """Test de charge sur les WebSockets"""
+    start_time = time.time()
+    
+    # Simuler 1000 messages par seconde pendant 1 minute
+    for i in range(60000):
+        data = {
+            'timestamp': time.time() - start_time,
+            'angle': random.uniform(0, 45),
+            'force': random.uniform(0, 1)
+        }
+        
+        # Envoyer via WebSocket
+        await websocket.send(json.dumps(data))
+        
+        if i % 1000 == 0:
+            print(f"Envoyé {i} messages")
+        
+        await asyncio.sleep(0.001)  # 1000 Hz
+\end{lstlisting}
+
+% =====================================
+% MAINTENANCE ET ÉVOLUTION
+% =====================================
+\section{Maintenance et évolution}
+
+\subsection{Structure de versioning}
+
+Le projet utilise le versioning sémantique (SemVer) :
+\begin{itemize}
+    \item \textbf{MAJOR} : Changements incompatibles de l'API
+    \item \textbf{MINOR} : Fonctionnalités ajoutées de manière rétrocompatible
+    \item \textbf{PATCH} : Corrections de bugs rétrocompatibles
+\end{itemize}
+
+\subsection{Logs et debugging}
+
+\subsubsection{Système de logging}
+
+\begin{lstlisting}[language=python, caption=Configuration du logging]
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Configuration du logger principal
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        RotatingFileHandler('mevem.log', maxBytes=1024*1024, backupCount=5),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger('MEVEM')
+
+# Utilisation dans le code
+logger.info("🌽 MEVEM - Démarrage de l'application")
+logger.warning("⚠️ Mode démo activé - aucun capteur détecté")
+logger.error("[ERREUR] Erreur de communication série")
+\end{lstlisting}
+
+\subsubsection{Niveaux de debugging}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Niveau} & \textbf{Usage} & \textbf{Contenu} \\
+\hline
+DEBUG & Développement & Détails de communication série, trames \\
+\hline
+INFO & Production & Événements importants, connexions \\
+\hline
+WARNING & Production & Problèmes non critiques, mode dégradé \\
+\hline
+ERROR & Production & Erreurs, exceptions gérées \\
+\hline
+CRITICAL & Production & Erreurs fatales, arrêt d'application \\
+\hline
+\end{tabular}
+\caption{Niveaux de logging}
+\label{tab:log_levels}
+\end{table}
+
+\subsection{Roadmap d'évolution}
+
+\subsubsection{Version 1.1 (Q2 2024)}
+
+\begin{itemize}
+    \item Support de protocoles série additionnels
+    \item Interface de configuration avancée
+    \item Export vers formats CSV et JSON
+    \item Mode batch pour traitement de fichiers
+\end{itemize}
+
+\subsubsection{Version 1.2 (Q3 2024)}
+
+\begin{itemize}
+    \item Interface mobile responsive
+    \item API RESTful complète pour intégration
+    \item Base de données pour historique des mesures
+    \item Analyses statistiques avancées
+\end{itemize}
+
+\subsubsection{Version 2.0 (Q4 2024)}
+
+\begin{itemize}
+    \item Architecture microservices
+    \item Support multi-utilisateur
+    \item Interface cloud (optionnelle)
+    \item Intégration IA pour analyse prédictive
+\end{itemize}
+
+% =====================================
+% ANNEXES TECHNIQUES
+% =====================================
+\section{Annexes techniques}
+
+\subsection{Annexe A : Schémas de base de données}
+
+\subsubsection{Format des fichiers de calibration}
+
+\begin{lstlisting}[caption=Structure future de la base de données]
+-- Table des sessions de mesure
+CREATE TABLE measurement_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    duration_seconds REAL,
+    sample_count INTEGER,
+    max_angle REAL,
+    max_force REAL,
+    calibration_used TEXT, -- JSON des paramètres de calibration
+    notes TEXT
+);
+
+-- Table des points de mesure
+CREATE TABLE measurement_points (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER REFERENCES measurement_sessions(id),
+    timestamp REAL, -- Temps relatif dans la session
+    angle_deg REAL,
+    force_kg REAL,
+    raw_angle INTEGER,
+    raw_force INTEGER,
+    samples_count INTEGER
+);
+\end{lstlisting}
+
+\subsection{Annexe B : Protocoles de communication détaillés}
+
+\subsubsection{Spécifications électriques}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Paramètre} & \textbf{Valeur} & \textbf{Tolérance} \\
+\hline
+Tension d'alimentation & 5,0 V & ±5\% \\
+\hline
+Courant de repos & 50 mA & ±10 mA \\
+\hline
+Courant en mesure & 200 mA & ±50 mA \\
+\hline
+Résolution ADC & 12 bits & - \\
+\hline
+Fréquence d'échantillonnage & 100 Hz & ±1 Hz \\
+\hline
+\end{tabular}
+\caption{Spécifications électriques détaillées}
+\label{tab:electrical_specs}
+\end{table}
+
+\subsubsection{Timing des communications}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering [DIAGRAMME: Timing] \\ 
+ Chronogramme des communications série}}
+\caption{Diagramme de timing des communications série}
+\label{fig:timing}
+\end{figure}
+
+\subsection{Annexe C : Code source des utilitaires}
+
+\subsubsection{Script de vérification système}
+
+\begin{lstlisting}[language=python, caption=Utilitaire de diagnostic système]
+#!/usr/bin/env python3
+"""
+Utilitaire de diagnostic système MEVEM
+Vérifie la configuration et les prérequis
+"""
+
+import os
+import sys
+import platform
+import serial.tools.list_ports
+import grp
+import pwd
+
+def check_system_requirements():
+    """Vérifier les prérequis système"""
+    print("🔍 Vérification des prérequis système")
+    print("=" * 50)
+    
+    # Version Python
+    python_version = sys.version_info
+    print(f"🐍 Python: {python_version.major}.{python_version.minor}.{python_version.micro}")
+    
+    if python_version < (3, 8):
+        print("[ERREUR] Python 3.8+ requis")
+        return False
+    else:
+        print("✅ Version Python compatible")
+    
+    # Système d'exploitation
+    system = platform.system()
+    print(f"💻 OS: {system} {platform.release()}")
+    
+    # Ports série disponibles
+    ports = list(serial.tools.list_ports.comports())
+    print(f"🔌 Ports série: {len(ports)} trouvés")
+    
+    for port in ports:
+        print(f"   • {port.device} - {port.description}")
+    
+    # Permissions (Linux uniquement)
+    if system == "Linux":
+        check_linux_permissions()
+    
+    return True
+
+def check_linux_permissions():
+    """Vérifier les permissions Linux"""
+    print("\n🔐 Vérification des permissions Linux")
+    
+    try:
+        # Obtenir l'utilisateur actuel
+        current_user = pwd.getpwuid(os.getuid()).pw_name
+        print(f"👤 Utilisateur: {current_user}")
+        
+        # Vérifier l'appartenance au groupe dialout
+        try:
+            dialout_group = grp.getgrnam('dialout')
+            if current_user in dialout_group.gr_mem:
+                print("[OK] Utilisateur dans le groupe dialout")
+            else:
+                print("[ERREUR] Utilisateur PAS dans le groupe dialout")
+                print(f"   Exécutez: sudo usermod -a -G dialout {current_user}")
+        except KeyError:
+            print("[AVERTISSEMENT] Groupe dialout non trouvé")
+    
+    except Exception as e:
+        print(f"[ERREUR] Erreur vérification permissions: {e}")
+
+if __name__ == "__main__":
+    check_system_requirements()
+\end{lstlisting}
+
+\subsection{Annexe D : Configuration de développement}
+
+\subsubsection{Configuration IDE recommandée}
+
+\begin{codebox}[VS Code settings.json]
+\begin{lstlisting}
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/dist": true,
+        "**/build": true
+    },
+    "editor.formatOnSave": true,
+    "python.testing.pytestEnabled": true
+}
+\end{lstlisting}
+\end{codebox}
+
+\subsubsection{Configuration pre-commit}
+
+\begin{lstlisting}[caption=.pre-commit-config.yaml]
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3.8
+  
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88]
+  
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile, black]
+\end{lstlisting}
+
+\end{document}

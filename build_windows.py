@@ -7,6 +7,7 @@ import os
 import sys
 import shutil
 import subprocess
+import platform
 from pathlib import Path
 
 def build_windows():
@@ -24,17 +25,29 @@ def build_windows():
     if build_dir.exists():
         shutil.rmtree(build_dir)
     
-    # Commande PyInstaller
+    # Commande PyInstaller optimisée
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--name=MEVEM",
         "--onefile",
         "--windowed",
+        "--noconfirm",
+        "--clean",
+        "--exclude-module=matplotlib",
+        "--exclude-module=IPython",
+        "--exclude-module=jupyter",
+        "--exclude-module=notebook",
+        "--exclude-module=PyQt5",
+        "--exclude-module=PyQt6", 
+        "--exclude-module=PySide2",
+        "--exclude-module=PySide6",
+        "--exclude-module=tkinter",
+        "--exclude-module=PIL.ImageTk",
         "--icon=static/icon.ico" if (base_dir / "static" / "icon.ico").exists() else "",
-        "--add-data=templates;templates",
-        "--add-data=static;static" if (base_dir / "static").exists() else "",
+        "--add-data=templates:templates",
+        "--add-data=static:static" if (base_dir / "static").exists() else "",
         "--hidden-import=pandas",
-        "--hidden-import=openpyxl",
+        "--hidden-import=openpyxl", 
         "--hidden-import=flask_socketio",
         "--hidden-import=engineio",
         "--hidden-import=socketio",
@@ -54,7 +67,8 @@ def build_windows():
         result = subprocess.run(cmd, cwd=base_dir, check=True)
         
         print("✅ Build Windows terminé!")
-        print(f"📦 Exécutable créé: {dist_dir / 'MEVEM.exe'}")
+        exe_name = "MEVEM.exe" if platform.system() == "Windows" else "MEVEM"
+        print(f"📦 Exécutable créé: {dist_dir / exe_name}")
         
         # Créer un répertoire de distribution propre
         dist_final = base_dir / "dist_windows"
@@ -62,8 +76,11 @@ def build_windows():
             shutil.rmtree(dist_final)
         dist_final.mkdir()
         
-        # Copier l'exécutable
-        shutil.copy2(dist_dir / "MEVEM.exe", dist_final / "MEVEM.exe")
+        # Copier l'exécutable (nom différent selon la plateforme)
+        exe_name = "MEVEM.exe" if platform.system() == "Windows" else "MEVEM"
+        src_exe = dist_dir / exe_name
+        dest_exe = dist_final / exe_name
+        shutil.copy2(src_exe, dest_exe)
         
         # Créer un fichier README
         readme_content = """MEVEM - Mesure de la verse du maïs
