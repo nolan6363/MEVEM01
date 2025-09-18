@@ -266,7 +266,7 @@
 
         .data-stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 8px;
             margin-top: 12px;
             padding-top: 12px;
@@ -449,6 +449,129 @@
             font-size: 0.9rem;
             color: #2d3748;
         }
+
+        /* Popup de calibration */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .popup-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .close-btn:hover {
+            color: #dc2626;
+        }
+
+        .calibration-step {
+            margin-bottom: 16px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #4a5568;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .calibration-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .calibration-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+
+        /* Styles pour la gestion des variétés */
+        .variety-status {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .variety-info {
+            text-align: center;
+        }
+
+        .variety-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .sample-info {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .variety-active {
+            background: #e6fffa;
+            border-color: #38b2ac;
+        }
+
+        .variety-active .variety-name {
+            color: #234e52;
+        }
+
+        .variety-active .sample-info {
+            color: #2c7a7b;
+        }
     </style>
 </head>
 <body>
@@ -506,40 +629,72 @@
                     </div>
                 </div>
 
+                <!-- Gestion des variétés -->
+                <div class="control-panel">
+                    <div class="panel-title">🌾 Gestion des variétés</div>
+
+                    <!-- État actuel -->
+                    <div id="varietyStatus" class="variety-status">
+                        <div class="variety-info">
+                            <div class="variety-name">Aucune variété sélectionnée</div>
+                            <div class="sample-info">Cliquez sur "Nouvelle variété" pour commencer</div>
+                        </div>
+                    </div>
+
+                    <!-- Saisie nouvelle variété -->
+                    <div id="newVarietyInput" class="control-group" style="display: none;">
+                        <label class="control-label">Nom de la nouvelle variété</label>
+                        <div class="input-group">
+                            <input type="text" id="newVarietyName" placeholder="Ex: DKC4519" class="range-input">
+                            <button id="confirmVarietyBtn" class="btn btn-success">OK</button>
+                        </div>
+                    </div>
+
+                    <!-- Boutons de contrôle -->
+                    <div class="control-group">
+                        <div class="btn-group">
+                            <button id="newVarietyBtn" class="btn btn-primary btn-full">
+                                🆕 Nouvelle variété
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="btn-group">
+                            <button id="nextSampleBtn" class="btn btn-secondary" disabled>
+                                ➡️ Échantillon suivant
+                            </button>
+                            <button id="finishVarietyBtn" class="btn btn-warning" disabled>
+                                🏁 Finir variété
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Contrôles de mesure -->
                 <div class="control-panel">
-                    <div class="panel-title">Contrôles de mesure</div>
-                    
+                    <div class="panel-title">📊 Mesures</div>
+
                     <div class="control-group">
-                        <button id="startBtn" class="btn btn-success btn-full">
-                            <span class="btn-text">Démarrer acquisition</span>
+                        <button id="startBtn" class="btn btn-success btn-full" disabled>
+                            <span class="btn-text">🚀 Démarrer mesure</span>
                         </button>
                     </div>
-                    
+
                     <div class="control-group">
                         <div class="btn-group">
                             <button id="stopBtn" class="btn btn-danger" disabled>
-                                Arrêter
+                                ⏹️ Arrêter
                             </button>
                             <button id="clearBtn" class="btn btn-warning">
-                                Effacer
+                                🗑️ Effacer
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="control-group">
-                        <label class="control-label" for="exportFilename">Nom du fichier</label>
-                        <div class="input-group">
-                            <input type="text" id="exportFilename" placeholder="mesure_mevem" class="range-input">
-                            <button id="autoNameBtn" class="btn btn-secondary" style="min-width: 60px;">
-                                Auto
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <button id="exportBtn" class="btn btn-primary btn-full" disabled>
-                            Exporter Excel
+                        <button id="saveBtn" class="btn btn-primary btn-full" disabled>
+                            💾 Sauvegarder échantillon
                         </button>
                     </div>
                 </div>
@@ -622,10 +777,75 @@
                         <div class="stat-label">Force max (kg)</div>
                     </div>
                     <div class="stat-box">
+                        <div class="stat-value" id="statAngleAtMaxForce">0.0°</div>
+                        <div class="stat-label">Angle force max</div>
+                    </div>
+                    <div class="stat-box">
                         <div class="stat-value" id="statPoints">0</div>
                         <div class="stat-label">Échantillons</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de calibration -->
+    <div id="calibrationPopup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <div class="popup-title">🎯 Calibration des capteurs</div>
+                <button class="close-btn" onclick="closeCalibrationPopup()">&times;</button>
+            </div>
+
+            <div class="calibration-step">
+                <div class="step-title">📐 Calibration de l'angle</div>
+                <div class="step-description">Définissez les valeurs de référence pour l'angle</div>
+
+                <div style="margin-bottom: 12px;">
+                    <label>Valeur brute à 0° :</label>
+                    <div class="calibration-input">
+                        <input type="number" id="angleMin" placeholder="Ex: 512">
+                        <button class="btn btn-secondary" onclick="readCurrentAngle('min')">Lire</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Valeur brute à 45° :</label>
+                    <div class="calibration-input">
+                        <input type="number" id="angleMax" placeholder="Ex: 768">
+                        <button class="btn btn-secondary" onclick="readCurrentAngle('max')">Lire</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calibration-step">
+                <div class="step-title">⚖️ Calibration de la force</div>
+                <div class="step-description">Définissez les valeurs de référence pour la force</div>
+
+                <div style="margin-bottom: 12px;">
+                    <label>Valeur brute à vide (0kg) :</label>
+                    <div class="calibration-input">
+                        <input type="number" id="forceMin" placeholder="Ex: 100">
+                        <button class="btn btn-secondary" onclick="readCurrentForce('min')">Lire</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Valeur brute à 1kg :</label>
+                    <div class="calibration-input">
+                        <input type="number" id="forceMax" placeholder="Ex: 900">
+                        <button class="btn btn-secondary" onclick="readCurrentForce('max')">Lire</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button class="btn btn-success btn-full" onclick="saveCalibration()">
+                    💾 Sauvegarder calibration
+                </button>
+                <button class="btn btn-secondary" onclick="closeCalibrationPopup()">
+                    Annuler
+                </button>
             </div>
         </div>
     </div>
@@ -637,6 +857,11 @@
         let measurementData = [];
         let isConnected = false;
         let isMeasuring = false;
+
+        // Gestion des variétés
+        let currentVariety = null;
+        let currentSample = 0;
+        let maxSamples = 5;
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
@@ -729,28 +954,69 @@
 
         // Event listeners
         function initEventListeners() {
+            // Contrôles de mesure
             document.getElementById('startBtn').addEventListener('click', startMeasurement);
             document.getElementById('stopBtn').addEventListener('click', stopMeasurement);
             document.getElementById('clearBtn').addEventListener('click', clearMeasurement);
-            document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-            document.getElementById('calibrateBtn').addEventListener('click', startCalibration);
+            document.getElementById('saveBtn').addEventListener('click', saveSample);
+
+            // Gestion des variétés
+            document.getElementById('newVarietyBtn').addEventListener('click', showNewVarietyInput);
+            document.getElementById('confirmVarietyBtn').addEventListener('click', confirmNewVariety);
+            document.getElementById('nextSampleBtn').addEventListener('click', nextSample);
+            document.getElementById('finishVarietyBtn').addEventListener('click', finishVariety);
+
+            // Anciens contrôles (gardés pour compatibilité)
+            document.getElementById('calibrateBtn').addEventListener('click', openCalibrationPopup);
             document.getElementById('refreshBtn').addEventListener('click', refreshStatus);
             document.getElementById('selectPortBtn').addEventListener('click', selectSerialPort);
             document.getElementById('refreshPortsBtn').addEventListener('click', loadAvailablePorts);
             document.getElementById('applyAveragingBtn').addEventListener('click', applyAveraging);
-            document.getElementById('autoNameBtn').addEventListener('click', generateAutoFilename);
-            
+
             // Event listener pour la sélection du port
             document.getElementById('portSelect').addEventListener('change', function() {
                 const selectBtn = document.getElementById('selectPortBtn');
                 selectBtn.disabled = !this.value;
             });
-            
+
             // Event listener pour le slider de moyennage
             document.getElementById('averagingSlider').addEventListener('input', function() {
                 const value = this.value;
                 document.getElementById('averagingValue').textContent = `${value} valeurs`;
             });
+
+            // Validation input nouvelle variété avec Entrée
+            document.getElementById('newVarietyName').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    confirmNewVariety();
+                }
+            });
+
+            // Event listener pour les contrôles clavier
+            document.addEventListener('keydown', function(event) {
+                // Éviter d'intercepter les touches si on tape dans un input
+                if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+                    return;
+                }
+
+                switch(event.code) {
+                    case 'Space':
+                        event.preventDefault();
+                        if (isMeasuring) {
+                            stopMeasurement();
+                        } else if (currentVariety) {
+                            startMeasurement();
+                        }
+                        break;
+                    case 'Escape':
+                        event.preventDefault();
+                        clearMeasurement();
+                        break;
+                }
+            });
+
+            // Initialiser l'état de l'interface
+            updateVarietyInterface();
         }
 
         // Fonctions de gestion des ports série
@@ -851,9 +1117,16 @@
             const day = String(now.getDate()).padStart(2, '0');
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            
-            const autoName = `MEVEM_CRC_${year}${month}${day}_${hours}${minutes}`;
-            
+
+            const variety = document.getElementById('varietyName').value.trim();
+            const sampleNum = document.getElementById('sampleNumber').value;
+
+            let autoName = `MEVEM_CRC_${year}${month}${day}_${hours}${minutes}`;
+
+            if (variety) {
+                autoName = `${variety}_ech${sampleNum}_${year}${month}${day}_${hours}${minutes}`;
+            }
+
             document.getElementById('exportFilename').value = autoName;
         }
 
@@ -985,39 +1258,42 @@
                 return;
             }
 
-            // Récupérer le nom personnalisé ou utiliser le défaut
-            const filenameInput = document.getElementById('exportFilename');
-            let customName = filenameInput.value.trim();
-            
-            // Nettoyer le nom de fichier (supprimer les caractères non autorisés)
-            if (customName) {
-                customName = customName.replace(/[<>:"/\\|?*]/g, '_');
-            }
-            
-            // Nom par défaut si aucun nom n'est spécifié
-            if (!customName) {
-                customName = 'mesure_mevem';
-            }
-            
-            // Ajouter timestamp pour éviter les conflits
-            const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
-            const finalFilename = `${customName}_${timestamp}.xlsx`;
+            // Récupérer les données du formulaire
+            const variety = document.getElementById('varietyName').value.trim();
+            const sampleNumber = parseInt(document.getElementById('sampleNumber').value) || 1;
+            const customFilename = document.getElementById('exportFilename').value.trim();
 
             try {
                 const response = await fetch('/api/measurement/export/excel', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        variety: variety,
+                        sample_number: sampleNumber,
+                        filename: customFilename
+                    })
                 });
-                
+
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
+
+                    // Le nom du fichier est déterminé par le serveur
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'mesure_mevem.xlsx';
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+
                     a.href = url;
-                    a.download = finalFilename;
+                    a.download = filename;
                     a.click();
                     window.URL.revokeObjectURL(url);
-                    showAlert(`Export Excel réussi: ${finalFilename}`, 'alert-success');
+                    showAlert(`Export Excel réussi: ${filename}`, 'alert-success');
                 } else {
                     const result = await response.json();
                     showAlert('Erreur export: ' + (result.error || 'Échec'), 'alert-danger');
@@ -1140,13 +1416,16 @@
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             const exportBtn = document.getElementById('exportBtn');
+            const exportStatsBtn = document.getElementById('exportStatsBtn');
             const clearBtn = document.getElementById('clearBtn');
-            
+            const variety = document.getElementById('varietyName').value.trim();
+
             startBtn.disabled = isMeasuring;
             stopBtn.disabled = !isMeasuring;
             exportBtn.disabled = measurementData.length === 0;
+            exportStatsBtn.disabled = !variety;
             clearBtn.disabled = isMeasuring;
-            
+
             // Mise à jour du texte du bouton start
             const btnText = startBtn.querySelector('.btn-text');
             if (isMeasuring) {
@@ -1161,21 +1440,27 @@
                 document.getElementById('statDuration').textContent = '0.0';
                 document.getElementById('statAngleRange').textContent = '0.0°';
                 document.getElementById('statForceMax').textContent = '0.000';
+                document.getElementById('statAngleAtMaxForce').textContent = '0.0°';
                 document.getElementById('statPoints').textContent = '0';
                 return;
             }
-            
+
             const timestamps = measurementData.map(d => d.timestamp);
             const angles = measurementData.map(d => d.angle);
             const forces = measurementData.map(d => d.force);
-            
+
             const duration = Math.max(...timestamps) - Math.min(...timestamps);
             const angleRange = Math.max(...angles) - Math.min(...angles);
             const forceMax = Math.max(...forces);
-            
+
+            // Trouver l'angle correspondant à la force max
+            const maxForceIndex = forces.indexOf(forceMax);
+            const angleAtMaxForce = angles[maxForceIndex];
+
             document.getElementById('statDuration').textContent = duration.toFixed(1);
             document.getElementById('statAngleRange').textContent = angleRange.toFixed(1) + '°';
             document.getElementById('statForceMax').textContent = forceMax.toFixed(3);
+            document.getElementById('statAngleAtMaxForce').textContent = angleAtMaxForce.toFixed(1) + '°';
             document.getElementById('statPoints').textContent = measurementData.length;
         }
 
@@ -1193,6 +1478,354 @@
                     alert.parentNode.removeChild(alert);
                 }
             }, 5000);
+        }
+
+        // Fonctions pour la popup de calibration
+        function openCalibrationPopup() {
+            document.getElementById('calibrationPopup').style.display = 'flex';
+            loadCurrentCalibration();
+        }
+
+        function closeCalibrationPopup() {
+            document.getElementById('calibrationPopup').style.display = 'none';
+        }
+
+        async function loadCurrentCalibration() {
+            try {
+                const response = await fetch('/api/calibration/status');
+                const data = await response.json();
+
+                if (data.calibration_data) {
+                    const cal = data.calibration_data;
+                    document.getElementById('angleMin').value = cal.angle.raw_min || '';
+                    document.getElementById('angleMax').value = cal.angle.raw_max || '';
+                    document.getElementById('forceMin').value = cal.force.raw_min || '';
+                    document.getElementById('forceMax').value = cal.force.raw_max || '';
+                }
+            } catch (error) {
+                showAlert('Erreur lors du chargement de la calibration: ' + error.message, 'alert-warning');
+            }
+        }
+
+        async function readCurrentAngle(type) {
+            showAlert('Lecture des valeurs en cours...', 'alert-info');
+
+            try {
+                const response = await fetch('/api/sensor/read_current', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.angle !== null) {
+                    const rawAngle = Math.round(result.angle);
+                    document.getElementById(type === 'min' ? 'angleMin' : 'angleMax').value = rawAngle;
+                    showAlert(`Valeur d'angle ${type === 'min' ? 'min' : 'max'} lue: ${rawAngle}`, 'alert-success');
+                } else {
+                    showAlert('Erreur lecture capteur: ' + (result.error || 'Aucune donnée'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function readCurrentForce(type) {
+            showAlert('Lecture des valeurs en cours...', 'alert-info');
+
+            try {
+                const response = await fetch('/api/sensor/read_current', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.force !== null) {
+                    const rawForce = Math.round(result.force);
+                    document.getElementById(type === 'min' ? 'forceMin' : 'forceMax').value = rawForce;
+                    showAlert(`Valeur de force ${type === 'min' ? 'min' : 'max'} lue: ${rawForce}`, 'alert-success');
+                } else {
+                    showAlert('Erreur lecture capteur: ' + (result.error || 'Aucune donnée'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function saveCalibration() {
+            const angleMin = parseInt(document.getElementById('angleMin').value);
+            const angleMax = parseInt(document.getElementById('angleMax').value);
+            const forceMin = parseInt(document.getElementById('forceMin').value);
+            const forceMax = parseInt(document.getElementById('forceMax').value);
+
+            if (!angleMin || !angleMax || !forceMin || !forceMax) {
+                showAlert('Veuillez remplir toutes les valeurs de calibration', 'alert-warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/calibration/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        angle: {raw_min: angleMin, raw_max: angleMax, real_min: 0.0, real_max: 45.0},
+                        force: {raw_min: forceMin, raw_max: forceMax, real_min: 0.0, real_max: 1.0}
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Calibration sauvegardée avec succès', 'alert-success');
+                    closeCalibrationPopup();
+                    refreshStatus();
+                } else {
+                    showAlert('Erreur lors de la sauvegarde: ' + (result.error || 'Erreur inconnue'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        // Fonction pour exporter les statistiques de variété
+        async function exportVarietyStats() {
+            const variety = document.getElementById('varietyName').value.trim();
+
+            if (!variety) {
+                showAlert('Veuillez spécifier une variété de maïs', 'alert-warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/variety/stats', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({variety: variety})
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${variety}_statistiques.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showAlert(`Statistiques exportées pour ${variety}`, 'alert-success');
+                } else {
+                    const result = await response.json();
+                    showAlert('Erreur export: ' + (result.error || 'Pas assez de données'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        // ========== NOUVELLES FONCTIONS POUR LA GESTION DES VARIÉTÉS ==========
+
+        function showNewVarietyInput() {
+            document.getElementById('newVarietyInput').style.display = 'block';
+            document.getElementById('newVarietyName').focus();
+            document.getElementById('newVarietyBtn').disabled = true;
+        }
+
+        function confirmNewVariety() {
+            const varietyName = document.getElementById('newVarietyName').value.trim();
+
+            if (!varietyName) {
+                showAlert('Veuillez saisir un nom de variété', 'alert-warning');
+                return;
+            }
+
+            // Initialiser la nouvelle variété
+            currentVariety = varietyName;
+            currentSample = 1;
+
+            // Cacher l'input et réinitialiser
+            document.getElementById('newVarietyInput').style.display = 'none';
+            document.getElementById('newVarietyName').value = '';
+            document.getElementById('newVarietyBtn').disabled = false;
+
+            updateVarietyInterface();
+            showAlert(`Nouvelle variété "${varietyName}" créée - Échantillon 1 prêt`, 'alert-success');
+        }
+
+        function updateVarietyInterface() {
+            const varietyStatus = document.getElementById('varietyStatus');
+            const varietyName = varietyStatus.querySelector('.variety-name');
+            const sampleInfo = varietyStatus.querySelector('.sample-info');
+
+            const startBtn = document.getElementById('startBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const nextSampleBtn = document.getElementById('nextSampleBtn');
+            const finishVarietyBtn = document.getElementById('finishVarietyBtn');
+
+            if (currentVariety) {
+                // Variété active
+                varietyStatus.classList.add('variety-active');
+                varietyName.textContent = currentVariety;
+                sampleInfo.textContent = `Échantillon ${currentSample}/${maxSamples}`;
+
+                // Activer les boutons de mesure
+                startBtn.disabled = false;
+
+                // État des autres boutons selon l'échantillon
+                if (currentSample < maxSamples) {
+                    nextSampleBtn.disabled = false;
+                    nextSampleBtn.textContent = `➡️ Échantillon ${currentSample + 1}`;
+                } else {
+                    nextSampleBtn.disabled = true;
+                }
+                finishVarietyBtn.disabled = false;
+
+            } else {
+                // Pas de variété
+                varietyStatus.classList.remove('variety-active');
+                varietyName.textContent = 'Aucune variété sélectionnée';
+                sampleInfo.textContent = 'Cliquez sur "Nouvelle variété" pour commencer';
+
+                // Désactiver les boutons de mesure
+                startBtn.disabled = true;
+                saveBtn.disabled = true;
+                nextSampleBtn.disabled = true;
+                finishVarietyBtn.disabled = true;
+            }
+        }
+
+        async function saveSample() {
+            if (!currentVariety || measurementData.length === 0) {
+                showAlert('Aucune donnée à sauvegarder', 'alert-warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/measurement/export/excel', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        variety: currentVariety,
+                        sample_number: currentSample,
+                        filename: `${currentVariety}_ech${currentSample}`
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert(`Échantillon ${currentSample} de ${currentVariety} sauvegardé`, 'alert-success');
+
+                    // Effacer les données pour le prochain échantillon
+                    await clearMeasurement();
+
+                    // Proposer de passer au suivant
+                    updateVarietyInterface();
+
+                } else {
+                    const result = await response.json();
+                    showAlert('Erreur sauvegarde: ' + (result.error || 'Échec'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        function nextSample() {
+            if (currentSample < maxSamples) {
+                currentSample++;
+                updateVarietyInterface();
+                showAlert(`Passage à l'échantillon ${currentSample}`, 'alert-info');
+            }
+        }
+
+        async function finishVariety() {
+            if (!currentVariety) return;
+
+            if (!confirm(`Terminer la variété "${currentVariety}" et générer les statistiques ?`)) {
+                return;
+            }
+
+            try {
+                // Générer les statistiques
+                const response = await fetch('/api/variety/stats', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({variety: currentVariety})
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentVariety}_statistiques.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    showAlert(`Statistiques de ${currentVariety} exportées`, 'alert-success');
+
+                    // Demander la nouvelle variété
+                    setTimeout(() => {
+                        if (confirm('Commencer une nouvelle variété ?')) {
+                            resetForNewVariety();
+                            showNewVarietyInput();
+                        } else {
+                            resetForNewVariety();
+                        }
+                    }, 1000);
+
+                } else {
+                    const result = await response.json();
+                    showAlert('Erreur génération statistiques: ' + (result.error || 'Pas assez de données'), 'alert-warning');
+
+                    // Proposer quand même de recommencer
+                    if (confirm('Commencer une nouvelle variété quand même ?')) {
+                        resetForNewVariety();
+                        showNewVarietyInput();
+                    }
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        function resetForNewVariety() {
+            currentVariety = null;
+            currentSample = 0;
+            measurementData = [];
+            chart.data.datasets[0].data = [];
+            chart.update();
+            updateDataStats();
+            updateVarietyInterface();
+        }
+
+        // Mettre à jour la fonction updateButtons pour le nouveau workflow
+        function updateButtons() {
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            // Logique de base
+            stopBtn.disabled = !isMeasuring;
+            clearBtn.disabled = isMeasuring;
+
+            // Nouvelles logiques
+            if (currentVariety) {
+                startBtn.disabled = isMeasuring;
+                saveBtn.disabled = measurementData.length === 0 || isMeasuring;
+            } else {
+                startBtn.disabled = true;
+                saveBtn.disabled = true;
+            }
+
+            // Mise à jour du texte du bouton start
+            const btnText = startBtn.querySelector('.btn-text');
+            if (isMeasuring) {
+                btnText.innerHTML = '<span class="loading"></span> Mesure en cours';
+            } else if (currentVariety) {
+                btnText.innerHTML = `🚀 Démarrer mesure (${currentVariety} - éch.${currentSample})`;
+            } else {
+                btnText.innerHTML = '🚀 Démarrer mesure';
+            }
         }
     </script>
 </body>

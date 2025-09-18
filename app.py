@@ -359,47 +359,236 @@ def export_to_excel():
     """Exporter les données vers Excel"""
     if not current_measurement:
         return jsonify({'error': 'Aucune donnée à exporter'}), 400
-    
+
     try:
+        # Récupérer les données de la requête
+        data = request.get_json() if request.is_json else {}
+        variety = data.get('variety', '').strip()
+        sample_number = data.get('sample_number', 1)
+        custom_filename = data.get('filename', '').strip()
+
         # Créer un DataFrame pandas
         df = pd.DataFrame(current_measurement)
-        
+
         # Créer un buffer en mémoire
         output = io.BytesIO()
-        
+
+        # Calculer les statistiques
+        forces = [p['force'] for p in current_measurement]
+        angles = [p['angle'] for p in current_measurement]
+        timestamps = [p['timestamp'] for p in current_measurement]
+
+        max_force = max(forces) if forces else 0
+        max_force_index = forces.index(max_force) if forces else 0
+        angle_at_max_force = angles[max_force_index] if angles else 0
+
         # Écrire le fichier Excel
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='Mesures MEVEM', index=False)
-            
-            # Ajouter des informations de métadonnées
+
+            # Ajouter des informations de métadonnées enrichies
+            metadata_info = [
+                'Date de mesure', 'Variété', 'Échantillon', 'Nombre de points',
+                'Durée (s)', 'Angle min (°)', 'Angle max (°)',
+                'Force min (kg)', 'Force max (kg)', 'Angle à force max (°)'
+            ]
+            metadata_values = [
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                variety or 'Non spécifiée',
+                sample_number,
+                len(current_measurement),
+                round(max(timestamps) - min(timestamps) if timestamps else 0, 2),
+                round(min(angles) if angles else 0, 2),
+                round(max(angles) if angles else 0, 2),
+                round(min(forces) if forces else 0, 3),
+                round(max_force, 3),
+                round(angle_at_max_force, 2)
+            ]
+
             metadata_df = pd.DataFrame({
-                'Information': ['Date de mesure', 'Nombre de points', 'Durée (s)', 'Angle min (°)', 'Angle max (°)', 'Force min (kg)', 'Force max (kg)'],
-                'Valeur': [
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    len(current_measurement),
-                    round(max([p['timestamp'] for p in current_measurement]) if current_measurement else 0, 2),
-                    round(min([p['angle'] for p in current_measurement]) if current_measurement else 0, 2),
-                    round(max([p['angle'] for p in current_measurement]) if current_measurement else 0, 2),
-                    round(min([p['force'] for p in current_measurement]) if current_measurement else 0, 3),
-                    round(max([p['force'] for p in current_measurement]) if current_measurement else 0, 3)
-                ]
+                'Information': metadata_info,
+                'Valeur': metadata_values
             })
             metadata_df.to_excel(writer, sheet_name='Métadonnées', index=False)
-        
+
         output.seek(0)
-        
-        # Nom du fichier
-        filename = f"mevem_mesure_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        
+
+        # Nom du fichier intelligent
+        if custom_filename:
+            filename = f"{custom_filename}.xlsx"
+        elif variety:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{variety}_ech{sample_number}_{timestamp}.xlsx"
+        else:
+            filename = f"mevem_mesure_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+        # Créer le dossier de la variété si nécessaire
+        if variety:
+            variety_dir = os.path.join('exports', variety)
+            os.makedirs(variety_dir, exist_ok=True)
+
         return send_file(
             output,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             as_attachment=True,
             download_name=filename
         )
-        
+
     except Exception as e:
         return jsonify({'error': f'Erreur export Excel: {str(e)}'}), 500
+
+@app.route('/api/calibration/save', methods=['POST'])
+def save_calibration():
+    """Sauvegarder une nouvelle calibration"""
+    global decoder
+    if not decoder:
+        return jsonify({'error': 'Décodeur non initialisé'}), 500
+
+    try:
+        data = request.get_json()
+        angle_data = data.get('angle', {})
+        force_data = data.get('force', {})
+
+        # Mettre à jour la calibration
+        decoder.calibration['angle'].update({
+            'raw_min': angle_data.get('raw_min'),
+            'raw_max': angle_data.get('raw_max'),
+            'real_min': angle_data.get('real_min', 0.0),
+            'real_max': angle_data.get('real_max', 45.0),
+            'calibrated': True
+        })
+
+        decoder.calibration['force'].update({
+            'raw_min': force_data.get('raw_min'),
+            'raw_max': force_data.get('raw_max'),
+            'real_min': force_data.get('real_min', 0.0),
+            'real_max': force_data.get('real_max', 1.0),
+            'calibrated': True
+        })
+
+        # Sauvegarder la calibration
+        decoder.save_calibration()
+
+        return jsonify({
+            'success': True,
+            'message': 'Calibration sauvegardée avec succès'
+        })
+
+    except Exception as e:
+        return jsonify({'error': f'Erreur sauvegarde calibration: {str(e)}'}), 500
+
+@app.route('/api/sensor/read_current', methods=['POST'])
+def read_current_values():
+    """Lire les valeurs actuelles du capteur"""
+    global decoder
+    if not decoder:
+        return jsonify({'error': 'Décodeur non initialisé'}), 500
+
+    try:
+        # Lire les valeurs pendant 2 secondes
+        angle_value, force_value = decoder.read_current_values(duration=2)
+
+        if angle_value is not None and force_value is not None:
+            return jsonify({
+                'success': True,
+                'angle': round(angle_value, 1),
+                'force': round(force_value, 1)
+            })
+        else:
+            return jsonify({'error': 'Impossible de lire les valeurs du capteur'}), 500
+
+    except Exception as e:
+        return jsonify({'error': f'Erreur lecture capteur: {str(e)}'}), 500
+
+@app.route('/api/variety/stats', methods=['POST'])
+def export_variety_stats():
+    """Exporter les statistiques d'une variété (compilation de 5 échantillons)"""
+    try:
+        data = request.get_json()
+        variety = data.get('variety', '').strip()
+
+        if not variety:
+            return jsonify({'error': 'Variété non spécifiée'}), 400
+
+        # Chercher les fichiers de la variété dans le dossier exports
+        variety_dir = os.path.join('exports', variety)
+        if not os.path.exists(variety_dir):
+            return jsonify({'error': f'Aucune donnée trouvée pour la variété {variety}'}), 404
+
+        # Collecter les données des échantillons
+        sample_stats = []
+
+        for i in range(1, 6):  # Échantillons 1 à 5
+            # Chercher les fichiers d'échantillon (pattern : variety_ech{i}_*.xlsx)
+            pattern = f"{variety}_ech{i}_"
+            sample_files = [f for f in os.listdir(variety_dir) if f.startswith(pattern) and f.endswith('.xlsx')]
+
+            if sample_files:
+                # Prendre le fichier le plus récent pour cet échantillon
+                latest_file = max(sample_files, key=lambda x: os.path.getctime(os.path.join(variety_dir, x)))
+                file_path = os.path.join(variety_dir, latest_file)
+
+                # Lire les métadonnées du fichier Excel
+                try:
+                    metadata_df = pd.read_excel(file_path, sheet_name='Métadonnées')
+                    metadata_dict = dict(zip(metadata_df['Information'], metadata_df['Valeur']))
+
+                    sample_stats.append({
+                        'echantillon': i,
+                        'fichier': latest_file,
+                        'force_max_kg': metadata_dict.get('Force max (kg)', 0),
+                        'angle_force_max_deg': metadata_dict.get('Angle à force max (°)', 0),
+                        'date_mesure': metadata_dict.get('Date de mesure', ''),
+                        'nb_points': metadata_dict.get('Nombre de points', 0),
+                        'duree_s': metadata_dict.get('Durée (s)', 0)
+                    })
+                except Exception as e:
+                    print(f"Erreur lecture fichier {latest_file}: {e}")
+
+        if len(sample_stats) < 2:
+            return jsonify({'error': f'Pas assez de données pour {variety} (minimum 2 échantillons requis)'}), 400
+
+        # Créer le fichier de statistiques
+        stats_df = pd.DataFrame(sample_stats)
+
+        # Calculer les statistiques globales
+        forces = [s['force_max_kg'] for s in sample_stats]
+        angles = [s['angle_force_max_deg'] for s in sample_stats]
+
+        summary_stats = {
+            'Variété': variety,
+            'Nombre échantillons': len(sample_stats),
+            'Force max moyenne (kg)': round(sum(forces) / len(forces), 3),
+            'Force max médiane (kg)': round(sorted(forces)[len(forces)//2], 3),
+            'Force max min (kg)': round(min(forces), 3),
+            'Force max max (kg)': round(max(forces), 3),
+            'Angle moyen à force max (°)': round(sum(angles) / len(angles), 1),
+            'Écart-type force (kg)': round((sum([(f - sum(forces)/len(forces))**2 for f in forces]) / len(forces))**0.5, 3),
+            'Date compilation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        # Créer le fichier Excel de statistiques
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Feuille de résumé
+            summary_df = pd.DataFrame([summary_stats])
+            summary_df.to_excel(writer, sheet_name='Résumé', index=False)
+
+            # Feuille de détail par échantillon
+            stats_df.to_excel(writer, sheet_name='Détail échantillons', index=False)
+
+        output.seek(0)
+        filename = f"{variety}_statistiques_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        return jsonify({'error': f'Erreur export statistiques: {str(e)}'}), 500
 
 @socketio.on('connect')
 def handle_connect():
@@ -421,7 +610,10 @@ def main():
     """Fonction principale"""
     print("🌽 MEVEM - Mesure de la verse du maïs")
     print("=" * 50)
-    
+
+    # Créer le dossier exports s'il n'existe pas
+    os.makedirs('exports', exist_ok=True)
+
     # Initialiser le décodeur
     if not initialize_decoder():
         print("⚠️ Mode démo activé")

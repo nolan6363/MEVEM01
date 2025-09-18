@@ -23,22 +23,25 @@ class CalibratedSensorDecoder:
         self.serial_conn = None
         self.running = False
 
-        # Configuration de calibration
-        self.calibration_file = "sensor_calibration.json"
+        # Configuration de calibration - dossier persistant
+        self.config_dir = self._get_config_directory()
+        os.makedirs(self.config_dir, exist_ok=True)
+        self.calibration_file = os.path.join(self.config_dir, "sensor_calibration.json")
+        # Calibration par défaut avec vos valeurs validées
         self.calibration = {
             'angle': {
-                'raw_min': 0,  # Valeur brute à 0°
-                'raw_max': 1023,  # Valeur brute à 45°
-                'real_min': 0.0,  # 0°
-                'real_max': 45.0,  # 45°
-                'calibrated': False
+                'raw_min': 1019.3323053199691,
+                'raw_max': 705.540192926045,
+                'real_min': 0.0,
+                'real_max': 45.0,
+                'calibrated': True
             },
             'force': {
-                'raw_min': 0,  # Valeur brute à vide
-                'raw_max': 1023,  # Valeur brute à 1kg
-                'real_min': 0.0,  # 0kg
-                'real_max': 1.0,  # 1kg
-                'calibrated': False
+                'raw_min': 23.444794952681388,
+                'raw_max': 55.96846254927727,
+                'real_min': 0.0,
+                'real_max': 1.0,
+                'calibrated': True
             }
         }
 
@@ -62,6 +65,19 @@ class CalibratedSensorDecoder:
             'Ta': re.compile(r'Ta\s*(0x[0-9A-Fa-f]{1,4})\s*(0x[0-9A-Fa-f]{1,4})')
         }
 
+    def _get_config_directory(self):
+        """Obtenir le répertoire de configuration de l'application"""
+        import platform
+        system = platform.system()
+
+        if system == "Windows":
+            # Windows: utiliser APPDATA
+            base_dir = os.environ.get('APPDATA', os.path.expanduser('~'))
+            return os.path.join(base_dir, 'MEVEM')
+        else:
+            # Linux/macOS: utiliser le dossier home
+            return os.path.join(os.path.expanduser('~'), '.mevem')
+
     def load_calibration(self):
         """Charger la calibration depuis un fichier"""
         if os.path.exists(self.calibration_file):
@@ -72,6 +88,12 @@ class CalibratedSensorDecoder:
                 print(f"✅ Calibration chargée depuis {self.calibration_file}")
             except Exception as e:
                 print(f"⚠️ Erreur chargement calibration: {e}")
+                print("🔧 Utilisation de la calibration par défaut")
+        else:
+            print("📡 Première utilisation - calibration par défaut chargée")
+            print("💡 La calibration par défaut est déjà optimisée pour votre capteur")
+            # Sauvegarder la calibration par défaut pour la prochaine fois
+            self.save_calibration()
 
     def save_calibration(self):
         """Sauvegarder la calibration"""
