@@ -24,21 +24,77 @@
         .container {
             max-width: 100vw;
             margin: 0;
-            padding: 12px;
+            padding: 6px;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 12px;
-            padding: 12px 20px;
+            margin-bottom: 6px;
+            padding: 8px 16px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border-left: 4px solid #2563eb;
             flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            text-align: left;
+        }
+
+        .header-title h1 {
+            margin: 0 0 5px 0;
+            color: #1e40af;
+        }
+
+        .header-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: #f9fafb;
+            color: #6b7280;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .tab-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .header-status {
+            font-size: 0.9rem;
         }
 
         .header h1 {
@@ -58,8 +114,8 @@
         /* Layout principal */
         .main-layout {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 12px;
+            grid-template-columns: 280px 1fr;
+            gap: 8px;
             flex: 1;
             min-height: 0;
         }
@@ -74,7 +130,7 @@
         .control-panel {
             background: white;
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
         }
@@ -233,7 +289,7 @@
         .chart-container {
             background: white;
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
             height: 100%;
@@ -572,60 +628,299 @@
         .variety-active .sample-info {
             color: #2c7a7b;
         }
+
+        /* Styles pour l'indicateur de mesure */
+        .measurement-status-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .measurement-status-card.measuring {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            animation: pulse-border 2s infinite;
+        }
+
+        .measurement-status-card.waiting {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .measurement-status-card.ready {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .measurement-status-card.processing {
+            background: #e0e7ff;
+            border-color: #6366f1;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-text {
+            flex: 1;
+        }
+
+        .status-main {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .status-sub {
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                border-color: #3b82f6;
+            }
+            50% {
+                border-color: #1d4ed8;
+            }
+        }
+
+        /* Animation pour l'icône de mesure */
+        .status-icon.measuring {
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Navigation des échantillons */
+        .sample-navigation {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .sample-nav-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .sample-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .sample-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 50px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .sample-btn:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .sample-btn.current {
+            border-color: #3b82f6;
+            background: #dbeafe;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .sample-btn.completed {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .sample-btn.completed:hover {
+            border-color: #059669;
+        }
+
+        .sample-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .sample-status {
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        /* Menu contextuel pour les échantillons */
+        .sample-context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 4px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .context-menu-item:hover {
+            background: #f1f5f9;
+        }
+
+        .context-menu-item.danger:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Système d'onglets */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Page de paramètres */
+        .settings-layout {
+            padding: 20px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #2563eb;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .status-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .status-value {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .status-online {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-offline {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌾 MEVEM</h1>
-            <p>Mesure de la verse du maïs - Centre de recherche de Chappes (CRC) Limagrain</p>
+            <div class="header-title">
+                <h1>🌾 MEVEM</h1>
+                <p>Mesure de la verse du maïs - Centre de recherche de Chappes (CRC) Limagrain</p>
+            </div>
+            <div class="header-controls">
+                <div class="tab-navigation">
+                    <button id="measurementTab" class="tab-btn active" onclick="showTab('measurement')">
+                        📊 Mesures
+                    </button>
+                    <button id="settingsTab" class="tab-btn" onclick="showTab('settings')">
+                        ⚙️ Paramètres
+                    </button>
+                </div>
+                <div class="header-status">
+                    <span id="connectionStatus" class="status-offline">Déconnecté</span>
+                </div>
+            </div>
         </div>
 
         <!-- Zone d'alertes -->
         <div id="alertContainer"></div>
 
-        <div class="main-layout">
-            <!-- Panneau latéral de contrôles -->
-            <div class="sidebar">
-                <!-- Configuration de la connexion -->
+        <!-- Onglet Mesures -->
+        <div id="measurementPanel" class="tab-panel active">
+            <div class="main-layout">
+                <!-- Panneau latéral de contrôles simplifié -->
+                <div class="sidebar">
+                <!-- Accès aux paramètres -->
                 <div class="control-panel">
-                    <div class="panel-title">Connexion capteur</div>
-                    
+                    <div class="panel-title">⚙️ Configuration</div>
                     <div class="control-group">
-                        <label class="control-label" for="portSelect">Port série</label>
-                        <select id="portSelect">
-                            <option value="">Recherche en cours...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="btn-group">
-                            <button id="selectPortBtn" class="btn btn-primary btn-full" disabled>
-                                Connecter
-                            </button>
-                        </div>
-                        <div style="margin-top: 6px;">
-                            <button id="refreshPortsBtn" class="btn btn-secondary btn-full">
-                                Actualiser
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Configuration d'acquisition -->
-                <div class="control-panel">
-                    <div class="panel-title">Paramètres d'acquisition</div>
-                    
-                    <div class="control-group">
-                        <label class="control-label" for="averagingSlider">
-                            Moyennage : <span id="averagingValue" class="range-value">25 valeurs</span>
-                        </label>
-                        <div class="input-group">
-                            <input type="range" id="averagingSlider" min="1" max="100" value="25" class="range-input">
-                            <button id="applyAveragingBtn" class="btn btn-primary">
-                                Appliquer
-                            </button>
-                        </div>
+                        <button id="openSettingsBtn" class="btn btn-secondary btn-full">
+                            Aller aux paramètres
+                        </button>
                     </div>
                 </div>
 
@@ -660,102 +955,68 @@
                     </div>
 
                     <div class="control-group">
-                        <div class="btn-group">
-                            <button id="nextSampleBtn" class="btn btn-secondary" disabled>
-                                ➡️ Échantillon suivant
-                            </button>
-                            <button id="finishVarietyBtn" class="btn btn-warning" disabled>
-                                🏁 Finir variété
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contrôles de mesure -->
-                <div class="control-panel">
-                    <div class="panel-title">📊 Mesures</div>
-
-                    <div class="control-group">
-                        <button id="startBtn" class="btn btn-success btn-full" disabled>
-                            <span class="btn-text">🚀 Démarrer mesure</span>
-                        </button>
-                    </div>
-
-                    <div class="control-group">
-                        <div class="btn-group">
-                            <button id="stopBtn" class="btn btn-danger" disabled>
-                                ⏹️ Arrêter
-                            </button>
-                            <button id="clearBtn" class="btn btn-warning">
-                                🗑️ Effacer
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <button id="saveBtn" class="btn btn-primary btn-full" disabled>
-                            💾 Sauvegarder échantillon
+                        <button id="finishVarietyBtn" class="btn btn-warning btn-full" disabled>
+                            🏁 Finir variété et exporter statistiques
                         </button>
                     </div>
                 </div>
 
-                <!-- État du système -->
-                <div class="status-panel">
-                    <div class="panel-title">État du système</div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">Port série</span>
-                        <span id="portStatus" class="status-value status-offline">Non connecté</span>
+                <!-- Indicateur d'état de mesure simplifié -->
+                <div class="control-panel">
+                    <div class="panel-title">📊 État de la mesure</div>
+
+                    <div id="measurementIndicator" class="control-group">
+                        <div class="measurement-status-card">
+                            <div class="status-icon" id="statusIcon">🔴</div>
+                            <div class="status-text">
+                                <div class="status-main" id="statusMain">En attente</div>
+                                <div class="status-sub" id="statusSub">Sélectionnez une variété pour commencer</div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">État</span>
-                        <span id="measurementStatus" class="status-value">Arrêtée</span>
-                    </div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">Échantillons</span>
-                        <span id="dataPoints" class="status-value">0</span>
-                    </div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">Calibration angle</span>
-                        <span id="angleCalibration" class="status-value status-offline">Non calibré</span>
-                    </div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">Calibration force</span>
-                        <span id="forceCalibration" class="status-value status-offline">Non calibré</span>
-                    </div>
-                    
-                    <div class="status-row">
-                        <span class="status-label">Moyennage</span>
-                        <span id="averagingStatus" class="status-value">25 valeurs</span>
+
+                    <!-- Bouton d'urgence seulement -->
+                    <div class="control-group" id="emergencyControls" style="display: none;">
+                        <button id="stopBtn" class="btn btn-danger btn-full">
+                            🚨 Arrêt d'urgence
+                        </button>
                     </div>
                 </div>
 
-                <!-- Calibration -->
-                <div class="control-panel">
-                    <div class="panel-title">Calibration</div>
-                    
-                    <div class="control-group">
-                        <div class="btn-group">
-                            <button id="calibrateBtn" class="btn btn-secondary">
-                                Calibrer
-                            </button>
-                            <button id="refreshBtn" class="btn btn-secondary">
-                                Actualiser
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Zone graphique principale -->
             <div class="chart-container">
                 <div class="chart-header">
                     <div class="chart-title">Courbe Force vs Angle</div>
-                    <div id="connectionStatus" class="status-value status-offline">Déconnecté</div>
+                    <div id="chartConnectionStatus" class="status-value status-offline">Déconnecté</div>
+                </div>
+
+                <!-- Navigation des échantillons -->
+                <div id="sampleNavigation" class="sample-navigation" style="display: none;">
+                    <div class="sample-nav-title">Échantillons de la variété</div>
+                    <div class="sample-buttons">
+                        <button class="sample-btn" data-sample="1" id="sampleBtn1">
+                            <span class="sample-number">1</span>
+                            <span class="sample-status">🔴</span>
+                        </button>
+                        <button class="sample-btn" data-sample="2" id="sampleBtn2">
+                            <span class="sample-number">2</span>
+                            <span class="sample-status">🔴</span>
+                        </button>
+                        <button class="sample-btn" data-sample="3" id="sampleBtn3">
+                            <span class="sample-number">3</span>
+                            <span class="sample-status">🔴</span>
+                        </button>
+                        <button class="sample-btn" data-sample="4" id="sampleBtn4">
+                            <span class="sample-number">4</span>
+                            <span class="sample-status">🔴</span>
+                        </button>
+                        <button class="sample-btn" data-sample="5" id="sampleBtn5">
+                            <span class="sample-number">5</span>
+                            <span class="sample-status">🔴</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="chart-wrapper">
@@ -847,6 +1108,98 @@
                     Annuler
                 </button>
             </div>
+            </div>
+        </div>
+
+        <!-- Onglet Paramètres -->
+        <div id="settingsPanel" class="tab-panel">
+            <div class="settings-layout">
+                <div class="settings-grid">
+                    <!-- Configuration de la connexion -->
+                    <div class="settings-section">
+                        <div class="section-title">📡 Connexion capteur</div>
+                        
+                        <div class="control-group">
+                            <label for="portSelectSettings">Port série:</label>
+                            <div class="input-group">
+                                <select id="portSelectSettings" class="form-control">
+                                    <option value="">Sélectionner un port...</option>
+                                </select>
+                                <button id="refreshPortsSettingsBtn" class="btn btn-secondary">
+                                    🔄
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <button id="selectPortSettingsBtn" class="btn btn-primary btn-full" disabled>
+                                Se connecter
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="btn-group">
+                                <button id="calibrateSettingsBtn" class="btn btn-warning">
+                                    🎯 Calibrer
+                                </button>
+                                <button id="refreshSettingsBtn" class="btn btn-secondary">
+                                    🔄 Actualiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paramètres d'acquisition -->
+                    <div class="settings-section">
+                        <div class="section-title">⚙️ Paramètres d'acquisition</div>
+                        
+                        <div class="control-group">
+                            <label class="control-label" for="averagingSliderSettings">
+                                Moyennage : <span id="averagingValueSettings" class="range-value">25 valeurs</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="range" id="averagingSliderSettings" min="1" max="100" value="25" class="range-input">
+                                <button id="applyAveragingSettingsBtn" class="btn btn-primary">
+                                    Appliquer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="skipPointsSliderSettings">
+                                Ignorer le bruit : <span id="skipPointsValueSettings" class="range-value">10 points</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="range" id="skipPointsSliderSettings" min="0" max="50" value="10" class="range-input">
+                                <button id="applySkipSettingsBtn" class="btn btn-primary">
+                                    Appliquer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Actions rapides -->
+                    <div class="settings-section">
+                        <div class="section-title">🚀 Actions rapides</div>
+                        
+                        <div class="control-group">
+                            <button id="backToMeasurementsBtn" class="btn btn-primary btn-full">
+                                📊 Retour aux mesures
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Menu contextuel pour les échantillons -->
+    <div id="sampleContextMenu" class="sample-context-menu">
+        <div class="context-menu-item" onclick="viewSampleFromMenu()">
+            👁️ Voir cet échantillon
+        </div>
+        <div class="context-menu-item danger" onclick="deleteSample()">
+            🗑️ Supprimer et refaire
         </div>
     </div>
 
@@ -855,21 +1208,59 @@
         let socket;
         let chart;
         let measurementData = [];
+        let previousMeasurements = []; // Stockage des mesures précédentes pour affichage transparent
         let isConnected = false;
         let isMeasuring = false;
+        let autoDetectionEnabled = true;
 
         // Gestion des variétés
         let currentVariety = null;
         let currentSample = 0;
         let maxSamples = 5;
+        
+        // Gestion des échantillons individuels
+        let sampleData = {}; // Stockage des données de chaque échantillon {1: [...], 2: [...], etc.}
+        let viewingSample = null; // Échantillon actuellement visualisé (null = vue globale)
+        let selectedSampleForMenu = null; // Échantillon sélectionné pour le menu contextuel
+
+        // Gestion des onglets
+        function showTab(tabName) {
+            // Cacher tous les panneaux
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Déactiver tous les boutons d'onglet
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Afficher le panneau sélectionné
+            document.getElementById(tabName + 'Panel').classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Mettre à jour les statuts si on va sur les paramètres
+            if (tabName === 'settings') {
+                updateSettingsStatus();
+                // Attendre que l'onglet soit visible avant de charger les paramètres
+                setTimeout(() => {
+                    loadAvailablePortsSettings();
+                    loadAveragingSettingsForBothTabs();
+                }, 100);
+            }
+        }
+
+        function updateSettingsStatus() {
+            // Les éléments de statut simple ont été supprimés avec la section "État du système"
+            // Cette fonction n'est plus nécessaire mais on la garde vide pour éviter les erreurs
+            console.log('📋 updateSettingsStatus appelée (fonctionnalité désactivée)');
+        }
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             initSocket();
             initChart();
             initEventListeners();
-            loadAvailablePorts();
-            loadAveragingSettings();
             refreshStatus();
         });
 
@@ -890,11 +1281,41 @@
             });
             
             socket.on('measurement_data', function(data) {
+                // Démarrage automatique détecté si on reçoit des données et qu'on n'est pas en train de mesurer
+                if (!isMeasuring && autoDetectionEnabled && currentVariety) {
+                    // Si l'échantillon actuel existe déjà, on le remplace
+                    if (sampleData[currentSample] && sampleData[currentSample].length > 0) {
+                        showAlert(`Remplacement de l'échantillon ${currentSample} par une nouvelle mesure`, 'alert-info');
+                        
+                        // Supprimer les anciennes données de cet échantillon
+                        delete sampleData[currentSample];
+                        
+                        // Reconstruire les mesures précédentes sans cet échantillon
+                        rebuildPreviousMeasurements();
+                    }
+                    
+                    isMeasuring = true;
+                    updateMeasurementStatus('En cours', 'status-measuring');
+                    updateMeasurementIndicator('measuring', 'Mesure en cours', 'Données reçues de la machine');
+                    updateButtons();
+                    showAlert('Mesure démarrée automatiquement', 'alert-success');
+                }
                 addMeasurementPoint(data);
             });
             
             socket.on('error', function(data) {
                 showAlert('Erreur: ' + data.message, 'alert-danger');
+            });
+
+            socket.on('measurement_auto_stopped', function(data) {
+                isMeasuring = false;
+                updateMeasurementStatus('Arrêtée', 'status-offline');
+                updateMeasurementIndicator('processing', 'Sauvegarde en cours...', 'Traitement automatique');
+                
+                // Sauvegarde automatique et passage à l'échantillon suivant
+                setTimeout(async () => {
+                    await autoSaveAndNext();
+                }, 1000);
             });
         }
 
@@ -904,17 +1325,32 @@
             chart = new Chart(ctx, {
                 type: 'scatter',
                 data: {
-                    datasets: [{
-                        label: 'Force vs Angle',
-                        data: [],
-                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        showLine: true,
-                        tension: 0.3
-                    }]
+                    datasets: [
+                        {
+                            label: 'Mesures précédentes',
+                            data: [],
+                            backgroundColor: 'rgba(156, 163, 175, 0.3)',
+                            borderColor: 'rgba(156, 163, 175, 0.5)',
+                            borderWidth: 1,
+                            pointRadius: 2,
+                            pointHoverRadius: 3,
+                            showLine: true,
+                            tension: 0.3,
+                            order: 2
+                        },
+                        {
+                            label: 'Mesure actuelle',
+                            data: [],
+                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            showLine: true,
+                            tension: 0.3,
+                            order: 1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -954,78 +1390,279 @@
 
         // Event listeners
         function initEventListeners() {
-            // Contrôles de mesure
-            document.getElementById('startBtn').addEventListener('click', startMeasurement);
-            document.getElementById('stopBtn').addEventListener('click', stopMeasurement);
-            document.getElementById('clearBtn').addEventListener('click', clearMeasurement);
-            document.getElementById('saveBtn').addEventListener('click', saveSample);
+            // Contrôle d'urgence seulement
+            const stopBtn = document.getElementById('stopBtn');
+            if (stopBtn) stopBtn.addEventListener('click', stopMeasurement);
 
             // Gestion des variétés
-            document.getElementById('newVarietyBtn').addEventListener('click', showNewVarietyInput);
-            document.getElementById('confirmVarietyBtn').addEventListener('click', confirmNewVariety);
-            document.getElementById('nextSampleBtn').addEventListener('click', nextSample);
-            document.getElementById('finishVarietyBtn').addEventListener('click', finishVariety);
+            const newVarietyBtn = document.getElementById('newVarietyBtn');
+            if (newVarietyBtn) newVarietyBtn.addEventListener('click', showNewVarietyInput);
+            
+            const confirmVarietyBtn = document.getElementById('confirmVarietyBtn');
+            if (confirmVarietyBtn) confirmVarietyBtn.addEventListener('click', confirmNewVariety);
+            
+            const finishVarietyBtn = document.getElementById('finishVarietyBtn');
+            if (finishVarietyBtn) finishVarietyBtn.addEventListener('click', finishVariety);
 
-            // Anciens contrôles (gardés pour compatibilité)
-            document.getElementById('calibrateBtn').addEventListener('click', openCalibrationPopup);
-            document.getElementById('refreshBtn').addEventListener('click', refreshStatus);
-            document.getElementById('selectPortBtn').addEventListener('click', selectSerialPort);
-            document.getElementById('refreshPortsBtn').addEventListener('click', loadAvailablePorts);
-            document.getElementById('applyAveragingBtn').addEventListener('click', applyAveraging);
+            // Contrôles système (avec vérification d'existence)
+            const calibrateBtn = document.getElementById('calibrateBtn');
+            if (calibrateBtn) calibrateBtn.addEventListener('click', openCalibrationPopup);
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) refreshBtn.addEventListener('click', refreshStatus);
+            
+            const selectPortBtn = document.getElementById('selectPortBtn');
+            if (selectPortBtn) selectPortBtn.addEventListener('click', selectSerialPort);
+            
+            const refreshPortsBtn = document.getElementById('refreshPortsBtn');
+            if (refreshPortsBtn) refreshPortsBtn.addEventListener('click', loadAvailablePorts);
+            
+            const applyAveragingBtn = document.getElementById('applyAveragingBtn');
+            if (applyAveragingBtn) applyAveragingBtn.addEventListener('click', applyAveraging);
+            
+            const applySkipBtn = document.getElementById('applySkipBtn');
+            if (applySkipBtn) applySkipBtn.addEventListener('click', applySkipPoints);
+            
+            const openSettingsBtn = document.getElementById('openSettingsBtn');
+            if (openSettingsBtn) openSettingsBtn.addEventListener('click', () => showTab('settings'));
+            
+            const backToMeasurementsBtn = document.getElementById('backToMeasurementsBtn');
+            if (backToMeasurementsBtn) backToMeasurementsBtn.addEventListener('click', () => showTab('measurement'));
 
             // Event listener pour la sélection du port
-            document.getElementById('portSelect').addEventListener('change', function() {
-                const selectBtn = document.getElementById('selectPortBtn');
-                selectBtn.disabled = !this.value;
-            });
+            const portSelect = document.getElementById('portSelect');
+            if (portSelect) {
+                portSelect.addEventListener('change', function() {
+                    const selectBtn = document.getElementById('selectPortBtn');
+                    if (selectBtn) selectBtn.disabled = !this.value;
+                });
+            }
 
             // Event listener pour le slider de moyennage
-            document.getElementById('averagingSlider').addEventListener('input', function() {
-                const value = this.value;
-                document.getElementById('averagingValue').textContent = `${value} valeurs`;
-            });
+            const averagingSlider = document.getElementById('averagingSlider');
+            if (averagingSlider) {
+                averagingSlider.addEventListener('input', function() {
+                    const value = this.value;
+                    const valueDisplay = document.getElementById('averagingValue');
+                    if (valueDisplay) valueDisplay.textContent = `${value} valeurs`;
+                });
+            }
+
+            // Event listener pour le slider d'ignorer bruit
+            const skipPointsSlider = document.getElementById('skipPointsSlider');
+            if (skipPointsSlider) {
+                skipPointsSlider.addEventListener('input', function() {
+                    const value = this.value;
+                    const valueDisplay = document.getElementById('skipPointsValue');
+                    if (valueDisplay) valueDisplay.textContent = `${value} points`;
+                });
+            }
 
             // Validation input nouvelle variété avec Entrée
-            document.getElementById('newVarietyName').addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    confirmNewVariety();
-                }
-            });
+            const newVarietyName = document.getElementById('newVarietyName');
+            if (newVarietyName) {
+                newVarietyName.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        confirmNewVariety();
+                    }
+                });
+            }
 
-            // Event listener pour les contrôles clavier
+            // Event listener pour Escape (arrêt d'urgence)
             document.addEventListener('keydown', function(event) {
-                // Éviter d'intercepter les touches si on tape dans un input
                 if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
                     return;
                 }
 
-                switch(event.code) {
-                    case 'Space':
-                        event.preventDefault();
-                        if (isMeasuring) {
-                            stopMeasurement();
-                        } else if (currentVariety) {
-                            startMeasurement();
-                        }
-                        break;
-                    case 'Escape':
-                        event.preventDefault();
-                        clearMeasurement();
-                        break;
+                if (event.code === 'Escape' && isMeasuring) {
+                    event.preventDefault();
+                    stopMeasurement();
                 }
+            });
+
+            // Event listeners pour les boutons d'échantillons
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`sampleBtn${i}`);
+                
+                // Clic gauche : sélectionner l'échantillon (même s'il est vide)
+                btn.addEventListener('click', function(e) {
+                    selectSample(i);
+                });
+                
+                // Clic droit : menu contextuel (seulement si l'échantillon existe)
+                btn.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    if (sampleData[i] && sampleData[i].length > 0) {
+                        showContextMenu(e, i);
+                    }
+                });
+            }
+
+            // Event listeners pour l'onglet paramètres (éléments renommés) - avec vérification d'existence
+            const portSelectSettings = document.getElementById('portSelectSettings');
+            if (portSelectSettings) {
+                portSelectSettings.addEventListener('change', function() {
+                    const selectBtn = document.getElementById('selectPortSettingsBtn');
+                    if (selectBtn) selectBtn.disabled = !this.value;
+                });
+            }
+
+            const selectPortSettingsBtn = document.getElementById('selectPortSettingsBtn');
+            if (selectPortSettingsBtn) {
+                console.log('✅ selectPortSettingsBtn trouvé, ajout event listener');
+                selectPortSettingsBtn.addEventListener('click', function() {
+                    console.log('🔵 Clic détecté sur selectPortSettingsBtn');
+                    selectSerialPortSettings();
+                });
+            } else {
+                console.log('❌ selectPortSettingsBtn non trouvé');
+            }
+            
+            const refreshPortsSettingsBtn = document.getElementById('refreshPortsSettingsBtn');
+            if (refreshPortsSettingsBtn) {
+                console.log('✅ refreshPortsSettingsBtn trouvé, ajout event listener');
+                refreshPortsSettingsBtn.addEventListener('click', function() {
+                    console.log('🔵 Clic détecté sur refreshPortsSettingsBtn');
+                    loadAvailablePortsSettings();
+                });
+            } else {
+                console.log('❌ refreshPortsSettingsBtn non trouvé');
+            }
+            
+            const calibrateSettingsBtn = document.getElementById('calibrateSettingsBtn');
+            if (calibrateSettingsBtn) calibrateSettingsBtn.addEventListener('click', openCalibrationPopup);
+            
+            const refreshSettingsBtn = document.getElementById('refreshSettingsBtn');
+            if (refreshSettingsBtn) refreshSettingsBtn.addEventListener('click', refreshStatus);
+            
+            const applyAveragingSettingsBtn = document.getElementById('applyAveragingSettingsBtn');
+            if (applyAveragingSettingsBtn) applyAveragingSettingsBtn.addEventListener('click', applyAveragingSettings);
+            
+            const applySkipSettingsBtn = document.getElementById('applySkipSettingsBtn');
+            if (applySkipSettingsBtn) applySkipSettingsBtn.addEventListener('click', applySkipPointsSettings);
+
+            // Event listeners pour les sliders des paramètres
+            const averagingSliderSettings = document.getElementById('averagingSliderSettings');
+            if (averagingSliderSettings) {
+                averagingSliderSettings.addEventListener('input', function() {
+                    const value = this.value;
+                    const valueDisplay = document.getElementById('averagingValueSettings');
+                    if (valueDisplay) valueDisplay.textContent = `${value} valeurs`;
+                });
+            }
+
+            const skipPointsSliderSettings = document.getElementById('skipPointsSliderSettings');
+            if (skipPointsSliderSettings) {
+                skipPointsSliderSettings.addEventListener('input', function() {
+                    const value = this.value;
+                    const valueDisplay = document.getElementById('skipPointsValueSettings');
+                    if (valueDisplay) valueDisplay.textContent = `${value} points`;
+                });
+            }
+
+            // Cacher le menu contextuel si on clique ailleurs
+            document.addEventListener('click', function() {
+                hideContextMenu();
             });
 
             // Initialiser l'état de l'interface
             updateVarietyInterface();
         }
 
-        // Fonctions de gestion des ports série
+        // Fonctions de gestion des ports série (désactivées - éléments supprimés)
         async function loadAvailablePorts() {
+            // Cette fonction n'est plus utilisée car les éléments ont été supprimés
+            console.log('📋 loadAvailablePorts appelée (fonctionnalité désactivée)');
+        }
+
+        async function selectSerialPort() {
+            // Cette fonction n'est plus utilisée car les éléments ont été supprimés  
+            console.log('📋 selectSerialPort appelée (fonctionnalité désactivée)');
+        }
+
+
+        // Fonction de génération automatique de nom de fichier
+        function generateAutoFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const variety = document.getElementById('varietyName').value.trim();
+            const sampleNum = document.getElementById('sampleNumber').value;
+
+            let autoName = `MEVEM_CRC_${year}${month}${day}_${hours}${minutes}`;
+
+            if (variety) {
+                autoName = `${variety}_ech${sampleNum}_${year}${month}${day}_${hours}${minutes}`;
+            }
+
+            document.getElementById('exportFilename').value = autoName;
+        }
+
+        // Fonctions de gestion du moyennage
+        async function loadAveragingSettings() {
+            // Cette fonction n'est plus utilisée car les éléments ont été supprimés
+            // On la garde vide pour éviter les erreurs de référence
+            console.log('📋 loadAveragingSettings appelée (fonctionnalité désactivée)');
+        }
+
+        async function loadAveragingSettingsForBothTabs() {
+            try {
+                const response = await fetch('/api/averaging/get');
+                const result = await response.json();
+                
+                if (result.averaging_window) {
+                    console.log('💡 Chargement paramètres moyennage:', result.averaging_window);
+                    
+                    // Onglet paramètres seulement (les éléments de l'onglet principal ont été supprimés)
+                    const sliderSettings = document.getElementById('averagingSliderSettings');
+                    const valueDisplaySettings = document.getElementById('averagingValueSettings');
+                    
+                    if (sliderSettings) {
+                        sliderSettings.value = result.averaging_window;
+                        console.log('✅ Slider paramètres mis à jour');
+                    } else {
+                        console.log('❌ averagingSliderSettings non trouvé');
+                    }
+                    if (valueDisplaySettings) {
+                        valueDisplaySettings.textContent = `${result.averaging_window} valeurs`;
+                    } else {
+                        console.log('❌ averagingValueSettings non trouvé');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement moyennage:', error);
+                // Ne plus afficher d'alerte car les éléments n'existent plus
+            }
+        }
+
+        async function applyAveraging() {
+            // Cette fonction n'est plus utilisée car les éléments ont été supprimés
+            // On la garde vide pour éviter les erreurs de référence
+            console.log('📋 applyAveraging appelée (fonctionnalité désactivée)');
+        }
+
+        async function applySkipPoints() {
+            // Cette fonction n'est plus utilisée car les éléments ont été supprimés
+            // On la garde vide pour éviter les erreurs de référence
+            console.log('📋 applySkipPoints appelée (fonctionnalité désactivée)');
+        }
+
+        // Fonctions pour l'onglet paramètres (éléments renommés)
+        async function loadAvailablePortsSettings() {
+            console.log('🔍 loadAvailablePortsSettings appelée');
             try {
                 const response = await fetch('/api/ports/list');
                 const result = await response.json();
                 
-                const portSelect = document.getElementById('portSelect');
+                const portSelect = document.getElementById('portSelectSettings');
+                if (!portSelect) {
+                    console.log('❌ portSelectSettings non trouvé');
+                    return;
+                }
                 portSelect.innerHTML = '';
                 
                 if (result.ports && result.ports.length > 0) {
@@ -1064,19 +1701,21 @@
                 }
                 
                 // Mettre à jour l'état du bouton
-                const selectBtn = document.getElementById('selectPortBtn');
-                selectBtn.disabled = !portSelect.value;
+                const selectBtn = document.getElementById('selectPortSettingsBtn');
+                if (selectBtn) selectBtn.disabled = !portSelect.value;
                 
             } catch (error) {
                 showAlert('Erreur lors du chargement des ports: ' + error.message, 'alert-danger');
-                const portSelect = document.getElementById('portSelect');
-                portSelect.innerHTML = '<option value="">❌ Erreur de chargement</option>';
+                const portSelect = document.getElementById('portSelectSettings');
+                if (portSelect) portSelect.innerHTML = '<option value="">❌ Erreur de chargement</option>';
             }
         }
 
-        async function selectSerialPort() {
-            const portSelect = document.getElementById('portSelect');
+        async function selectSerialPortSettings() {
+            console.log('🔍 selectSerialPortSettings appelée');
+            const portSelect = document.getElementById('portSelectSettings');
             const selectedPort = portSelect.value;
+            console.log('Port sélectionné:', selectedPort);
             
             if (!selectedPort) {
                 showAlert('Veuillez sélectionner un port série', 'alert-warning');
@@ -1099,6 +1738,8 @@
                     
                     // Actualiser le statut global
                     refreshStatus();
+                    
+                    // Les éléments de synchronisation ont été supprimés avec la section "État du système"
                 } else {
                     showAlert('Erreur: ' + (result.error || 'Échec de la connexion'), 'alert-danger');
                     updatePortStatus('Erreur de connexion', 'status-offline');
@@ -1109,49 +1750,8 @@
             }
         }
 
-        // Fonction de génération automatique de nom de fichier
-        function generateAutoFilename() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-
-            const variety = document.getElementById('varietyName').value.trim();
-            const sampleNum = document.getElementById('sampleNumber').value;
-
-            let autoName = `MEVEM_CRC_${year}${month}${day}_${hours}${minutes}`;
-
-            if (variety) {
-                autoName = `${variety}_ech${sampleNum}_${year}${month}${day}_${hours}${minutes}`;
-            }
-
-            document.getElementById('exportFilename').value = autoName;
-        }
-
-        // Fonctions de gestion du moyennage
-        async function loadAveragingSettings() {
-            try {
-                const response = await fetch('/api/averaging/get');
-                const result = await response.json();
-                
-                if (result.averaging_window) {
-                    const slider = document.getElementById('averagingSlider');
-                    const valueDisplay = document.getElementById('averagingValue');
-                    const statusDisplay = document.getElementById('averagingStatus');
-                    
-                    slider.value = result.averaging_window;
-                    valueDisplay.textContent = `${result.averaging_window} valeurs`;
-                    statusDisplay.textContent = `${result.averaging_window} valeurs`;
-                }
-            } catch (error) {
-                showAlert('Erreur lors du chargement des paramètres de moyennage: ' + error.message, 'alert-danger');
-            }
-        }
-
-        async function applyAveraging() {
-            const slider = document.getElementById('averagingSlider');
+        async function applyAveragingSettings() {
+            const slider = document.getElementById('averagingSliderSettings');
             const newValue = parseInt(slider.value);
             
             try {
@@ -1164,8 +1764,34 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    document.getElementById('averagingStatus').textContent = `${newValue} valeurs`;
                     showAlert(`Moyennage configuré à ${newValue} valeurs`, 'alert-success');
+                    
+                    // Les éléments de synchronisation ont été supprimés avec la section "État du système"
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Échec de la configuration'), 'alert-danger');
+                }
+            } catch (error) {
+                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
+            }
+        }
+
+        async function applySkipPointsSettings() {
+            const slider = document.getElementById('skipPointsSliderSettings');
+            const newValue = parseInt(slider.value);
+            
+            try {
+                const response = await fetch('/api/skip_points/set', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({skip_points: newValue})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(`Filtrage du bruit configuré à ${newValue} points`, 'alert-success');
+                    
+                    // Les éléments de synchronisation ont été supprimés avec la section "État du système"
                 } else {
                     showAlert('Erreur: ' + (result.error || 'Échec de la configuration'), 'alert-danger');
                 }
@@ -1197,6 +1823,23 @@
             }
         }
 
+        async function startListening() {
+            try {
+                const response = await fetch('/api/measurement/start_listening', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Écoute automatique démarrée');
+                }
+            } catch (error) {
+                console.error('Erreur démarrage écoute:', error.message);
+            }
+        }
+
         async function stopMeasurement() {
             try {
                 const response = await fetch('/api/measurement/stop', {
@@ -1209,6 +1852,7 @@
                 if (result.success) {
                     isMeasuring = false;
                     updateMeasurementStatus('Arrêtée', 'status-offline');
+                    updateMeasurementIndicator('stopped', 'Mesure arrêtée', `${result.data_points} points enregistrés`);
                     updateButtons();
                     showAlert(`Mesure arrêtée (${result.data_points} points)`, 'alert-info');
                 } else {
@@ -1219,38 +1863,6 @@
             }
         }
 
-        async function clearMeasurement() {
-            if (measurementData.length === 0) {
-                showAlert('Aucune donnée à effacer', 'alert-info');
-                return;
-            }
-
-            if (!confirm('Êtes-vous sûr de vouloir effacer toutes les données?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/measurement/clear', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    measurementData = [];
-                    chart.data.datasets[0].data = [];
-                    chart.update();
-                    updateDataStats();
-                    updateButtons();
-                    showAlert('Données effacées', 'alert-success');
-                } else {
-                    showAlert('Erreur: ' + (result.error || 'Échec de l\'effacement'), 'alert-danger');
-                }
-            } catch (error) {
-                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
-            }
-        }
 
         async function exportToExcel() {
             if (measurementData.length === 0) {
@@ -1340,6 +1952,10 @@
                 updateCalibrationStatus('angleCalibration', status.angle_calibrated);
                 updateCalibrationStatus('forceCalibration', status.force_calibrated);
                 
+                // Mettre à jour le statut global de calibration (calibré si les deux sont calibrés)
+                const globalCalibrated = status.angle_calibrated && status.force_calibrated;
+                updateGlobalCalibrationStatus(globalCalibrated);
+                
                 // Récupérer les données de mesure
                 const dataResponse = await fetch('/api/measurement/data');
                 const dataStatus = await dataResponse.json();
@@ -1353,8 +1969,8 @@
                 updateDataPoints(dataStatus.points || 0);
                 updateButtons();
                 
-                // Mettre à jour le graphique
-                chart.data.datasets[0].data = measurementData.map(d => ({x: d.angle, y: d.force}));
+                // Mettre à jour le graphique (dataset 1 = mesure actuelle)
+                chart.data.datasets[1].data = measurementData.map(d => ({x: d.angle, y: d.force}));
                 chart.update();
                 updateDataStats();
                 
@@ -1367,15 +1983,15 @@
         function addMeasurementPoint(data) {
             measurementData.push(data);
             
-            // Ajouter au graphique
-            chart.data.datasets[0].data.push({
+            // Ajouter au graphique (dataset 1 = mesure actuelle)
+            chart.data.datasets[1].data.push({
                 x: data.angle,
                 y: data.force
             });
             
             // Limiter le nombre de points affichés pour les performances
-            if (chart.data.datasets[0].data.length > 1000) {
-                chart.data.datasets[0].data.shift();
+            if (chart.data.datasets[1].data.length > 1000) {
+                chart.data.datasets[1].data.shift();
             }
             
             chart.update('none'); // Update sans animation pour les performances
@@ -1384,54 +2000,132 @@
             updateDataStats();
         }
 
+        function addPreviousMeasurementsToChart() {
+            // Utiliser la nouvelle fonction de visualisation
+            updateSampleVisualization();
+        }
+
         function updateConnectionStatus(text, className) {
-            const element = document.getElementById('connectionStatus');
-            element.textContent = text;
-            element.className = 'status-value ' + className;
+            // Mettre à jour le statut dans l'en-tête
+            const headerStatus = document.getElementById('connectionStatus');
+            if (headerStatus) {
+                headerStatus.textContent = text;
+                headerStatus.className = className;
+            }
+            
+            // Mettre à jour le statut dans le graphique  
+            const chartStatus = document.getElementById('chartConnectionStatus');
+            if (chartStatus) {
+                chartStatus.textContent = text;
+                chartStatus.className = 'status-value ' + className;
+            }
+            
+            // Mettre à jour le statut dans l'onglet paramètres si il existe
+            const settingsStatus = document.getElementById('connectionStatusDetailed');
+            if (settingsStatus) {
+                settingsStatus.textContent = text;
+                settingsStatus.className = 'status-value ' + className;
+            }
         }
 
         function updatePortStatus(text, className) {
             const element = document.getElementById('portStatus');
-            element.textContent = text;
-            element.className = 'status-value ' + className;
+            if (element) {
+                element.textContent = text;
+                element.className = 'status-value ' + className;
+            }
         }
 
         function updateMeasurementStatus(text, className) {
             const element = document.getElementById('measurementStatus');
-            element.textContent = text;
-            element.className = 'status-value ' + className;
+            if (element) {
+                element.textContent = text;
+                element.className = 'status-value ' + className;
+            }
         }
 
         function updateCalibrationStatus(elementId, isCalibrated) {
             const element = document.getElementById(elementId);
-            element.textContent = isCalibrated ? 'Calibré' : 'Non calibré';
-            element.className = 'status-value ' + (isCalibrated ? 'status-online' : 'status-offline');
+            if (element) {
+                element.textContent = isCalibrated ? 'Calibré' : 'Non calibré';
+                element.className = 'status-value ' + (isCalibrated ? 'status-online' : 'status-offline');
+            }
+        }
+
+        function updateGlobalCalibrationStatus(isCalibrated) {
+            const text = isCalibrated ? 'Calibré' : 'Non calibré';
+            const className = isCalibrated ? 'status-online' : 'status-offline';
+            
+            // Mettre à jour le statut simplifié dans l'onglet mesures
+            const simpleStatus = document.getElementById('calibrationStatusSimple');
+            if (simpleStatus) {
+                simpleStatus.textContent = text;
+                simpleStatus.className = 'status-value ' + className;
+            }
+            
+            // Mettre à jour le statut détaillé dans l'onglet paramètres
+            const detailedStatus = document.getElementById('calibrationStatusDetailed');
+            if (detailedStatus) {
+                detailedStatus.textContent = text;
+                detailedStatus.className = 'status-value ' + className;
+            }
         }
 
         function updateDataPoints(count) {
-            document.getElementById('dataPoints').textContent = count;
+            const element = document.getElementById('dataPoints');
+            if (element) element.textContent = count;
+        }
+
+        function updateMeasurementIndicator(state, mainText, subText) {
+            const card = document.querySelector('.measurement-status-card');
+            const icon = document.getElementById('statusIcon');
+            const main = document.getElementById('statusMain');
+            const sub = document.getElementById('statusSub');
+            const emergencyControls = document.getElementById('emergencyControls');
+
+            // Nettoyer les classes précédentes
+            card.className = 'measurement-status-card';
+            icon.className = 'status-icon';
+
+            switch(state) {
+                case 'waiting':
+                    card.classList.add('waiting');
+                    icon.textContent = '⏳';
+                    emergencyControls.style.display = 'none';
+                    break;
+                case 'ready':
+                    card.classList.add('ready');
+                    icon.textContent = '✅';
+                    emergencyControls.style.display = 'none';
+                    break;
+                case 'measuring':
+                    card.classList.add('measuring');
+                    icon.classList.add('measuring');
+                    icon.textContent = '🔄';
+                    emergencyControls.style.display = 'block';
+                    break;
+                case 'processing':
+                    card.classList.add('processing');
+                    icon.textContent = '💾';
+                    emergencyControls.style.display = 'none';
+                    break;
+                case 'stopped':
+                    icon.textContent = '⏹️';
+                    emergencyControls.style.display = 'none';
+                    break;
+                default:
+                    icon.textContent = '🔴';
+                    emergencyControls.style.display = 'none';
+            }
+
+            main.textContent = mainText;
+            sub.textContent = subText;
         }
 
         function updateButtons() {
-            const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
-            const exportBtn = document.getElementById('exportBtn');
-            const exportStatsBtn = document.getElementById('exportStatsBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const variety = document.getElementById('varietyName').value.trim();
-
-            startBtn.disabled = isMeasuring;
-            stopBtn.disabled = !isMeasuring;
-            exportBtn.disabled = measurementData.length === 0;
-            exportStatsBtn.disabled = !variety;
-            clearBtn.disabled = isMeasuring;
-
-            // Mise à jour du texte du bouton start
-            const btnText = startBtn.querySelector('.btn-text');
-            if (isMeasuring) {
-                btnText.innerHTML = '<span class="loading"></span> Acquisition en cours';
-            } else {
-                btnText.innerHTML = 'Démarrer acquisition';
+            if (stopBtn) {
+                stopBtn.disabled = !isMeasuring;
             }
         }
 
@@ -1624,6 +2318,75 @@
 
         // ========== NOUVELLES FONCTIONS POUR LA GESTION DES VARIÉTÉS ==========
 
+        async function autoSaveAndNext() {
+            if (!currentVariety || measurementData.length === 0) {
+                updateMeasurementIndicator('ready', 'Prêt pour mesure', `${currentVariety} - Échantillon ${currentSample}`);
+                startListening(); // Relancer l'écoute
+                return;
+            }
+
+            try {
+                // 1. Sauvegarder automatiquement
+                const response = await fetch('/api/measurement/export/excel', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        variety: currentVariety,
+                        sample_number: currentSample,
+                        filename: `${currentVariety}_ech${currentSample}`
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert(`Échantillon ${currentSample} sauvegardé automatiquement`, 'alert-success');
+
+                    // 2. Stocker les données de cet échantillon
+                    sampleData[currentSample] = [...measurementData];
+
+                    // 3. Ajouter aux mesures précédentes pour l'affichage
+                    measurementData.forEach(point => {
+                        previousMeasurements.push(point);
+                    });
+
+                    // 4. Mettre à jour l'état du bouton échantillon
+                    updateSampleButton(currentSample, 'completed');
+
+                    // 5. Effacer les données actuelles
+                    measurementData = [];
+                    chart.data.datasets[1].data = [];
+                    addPreviousMeasurementsToChart();
+                    chart.update();
+                    updateDataStats();
+
+                    // 4. Passer à l'échantillon suivant ou proposer de finir
+                    if (currentSample < maxSamples) {
+                        currentSample++;
+                        updateVarietyInterface();
+                        showAlert(`Passage automatique à l'échantillon ${currentSample}`, 'alert-info');
+                        
+                        // 5. Relancer l'écoute pour l'échantillon suivant
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500);
+                    } else {
+                        // 5 échantillons atteints, proposer de finir
+                        updateMeasurementIndicator('ready', 'Variété complète', '5 échantillons terminés - Cliquez "Finir variété"');
+                        showAlert('5 échantillons terminés ! Vous pouvez finir la variété.', 'alert-success');
+                    }
+
+                } else {
+                    const result = await response.json();
+                    showAlert('Erreur sauvegarde automatique: ' + (result.error || 'Échec'), 'alert-danger');
+                    updateMeasurementIndicator('ready', 'Erreur de sauvegarde', 'Recommencez la mesure');
+                    startListening(); // Relancer l'écoute même en cas d'erreur
+                }
+            } catch (error) {
+                showAlert('Erreur: ' + error.message, 'alert-danger');
+                updateMeasurementIndicator('ready', 'Erreur', 'Recommencez la mesure');
+                startListening(); // Relancer l'écoute même en cas d'erreur
+            }
+        }
+
         function showNewVarietyInput() {
             document.getElementById('newVarietyInput').style.display = 'block';
             document.getElementById('newVarietyName').focus();
@@ -1649,35 +2412,37 @@
 
             updateVarietyInterface();
             showAlert(`Nouvelle variété "${varietyName}" créée - Échantillon 1 prêt`, 'alert-success');
+            
+            // Démarrer l'écoute automatique
+            startListening();
         }
 
         function updateVarietyInterface() {
             const varietyStatus = document.getElementById('varietyStatus');
             const varietyName = varietyStatus.querySelector('.variety-name');
             const sampleInfo = varietyStatus.querySelector('.sample-info');
-
-            const startBtn = document.getElementById('startBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const nextSampleBtn = document.getElementById('nextSampleBtn');
             const finishVarietyBtn = document.getElementById('finishVarietyBtn');
+            const sampleNavigation = document.getElementById('sampleNavigation');
 
             if (currentVariety) {
                 // Variété active
                 varietyStatus.classList.add('variety-active');
                 varietyName.textContent = currentVariety;
-                sampleInfo.textContent = `Échantillon ${currentSample}/${maxSamples}`;
+                sampleInfo.textContent = `Échantillon ${currentSample}/${maxSamples} (automatique)`;
 
-                // Activer les boutons de mesure
-                startBtn.disabled = false;
+                // Afficher la navigation des échantillons
+                sampleNavigation.style.display = 'block';
+                updateSampleNavigation();
 
-                // État des autres boutons selon l'échantillon
-                if (currentSample < maxSamples) {
-                    nextSampleBtn.disabled = false;
-                    nextSampleBtn.textContent = `➡️ Échantillon ${currentSample + 1}`;
-                } else {
-                    nextSampleBtn.disabled = true;
+                // Mettre à jour l'indicateur de mesure
+                if (currentSample <= maxSamples) {
+                    updateMeasurementIndicator('ready', 'Prêt pour mesure', `${currentVariety} - Échantillon ${currentSample} - Pressez le bouton machine`);
                 }
+
+                // Activer le bouton finir variété et masquer nouvelle variété
                 finishVarietyBtn.disabled = false;
+                const newVarietyBtn = document.getElementById('newVarietyBtn');
+                if (newVarietyBtn) newVarietyBtn.style.display = 'none';
 
             } else {
                 // Pas de variété
@@ -1685,54 +2450,333 @@
                 varietyName.textContent = 'Aucune variété sélectionnée';
                 sampleInfo.textContent = 'Cliquez sur "Nouvelle variété" pour commencer';
 
-                // Désactiver les boutons de mesure
-                startBtn.disabled = true;
-                saveBtn.disabled = true;
-                nextSampleBtn.disabled = true;
+                // Cacher la navigation des échantillons
+                sampleNavigation.style.display = 'none';
+
+                // Mettre à jour l'indicateur de mesure
+                updateMeasurementIndicator('waiting', 'En attente', 'Sélectionnez une variété pour commencer');
+
+                // Désactiver le bouton finir variété et réafficher nouvelle variété
                 finishVarietyBtn.disabled = true;
+                const newVarietyBtn = document.getElementById('newVarietyBtn');
+                if (newVarietyBtn) newVarietyBtn.style.display = 'block';
             }
         }
 
-        async function saveSample() {
-            if (!currentVariety || measurementData.length === 0) {
-                showAlert('Aucune donnée à sauvegarder', 'alert-warning');
+        // ========== FONCTIONS DE NAVIGATION DES ÉCHANTILLONS ==========
+
+        function updateSampleNavigation() {
+            const navTitle = document.querySelector('.sample-nav-title');
+            navTitle.textContent = `Échantillons de ${currentVariety}`;
+
+            // Mettre à jour l'état de chaque bouton
+            for (let i = 1; i <= 5; i++) {
+                updateSampleButton(i, getSampleStatus(i));
+            }
+        }
+
+        function getSampleStatus(sampleNum) {
+            if (sampleNum === currentSample) {
+                return 'current';
+            } else if (sampleData[sampleNum] && sampleData[sampleNum].length > 0) {
+                return 'completed';
+            } else {
+                return 'empty';
+            }
+        }
+
+        function updateSampleButton(sampleNum, status) {
+            const btn = document.getElementById(`sampleBtn${sampleNum}`);
+            const statusSpan = btn.querySelector('.sample-status');
+            
+            // Nettoyer les classes
+            btn.className = 'sample-btn';
+            
+            switch(status) {
+                case 'current':
+                    btn.classList.add('current');
+                    statusSpan.textContent = '🔄';
+                    btn.title = `Échantillon ${sampleNum} (en cours)`;
+                    break;
+                case 'completed':
+                    btn.classList.add('completed');
+                    statusSpan.textContent = '✅';
+                    btn.title = `Échantillon ${sampleNum} (terminé) - Clic: voir | Clic droit: options`;
+                    break;
+                case 'empty':
+                default:
+                    statusSpan.textContent = '🔴';
+                    btn.title = `Échantillon ${sampleNum} (pas encore fait)`;
+                    break;
+            }
+        }
+
+        function selectSample(sampleNum) {
+            // Changer le currentSample pour que la prochaine mesure se fasse sur cet échantillon
+            currentSample = sampleNum;
+            
+            if (sampleData[sampleNum] && sampleData[sampleNum].length > 0) {
+                // Échantillon existant : le mettre en avant
+                viewingSample = sampleNum;
+                
+                // Reconstruire l'affichage avec l'échantillon sélectionné en avant
+                updateSampleVisualization();
+
+                // Mettre à jour les statistiques avec cet échantillon
+                const tempMeasurementData = measurementData;
+                measurementData = [...sampleData[sampleNum]]; // Temporaire pour les stats
+                updateDataStats();
+                measurementData = tempMeasurementData; // Restaurer
+
+                // Mettre à jour le titre du graphique
+                updateChartTitle(`Échantillon ${sampleNum} sélectionné`);
+                
+                showAlert(`Échantillon ${sampleNum} sélectionné - Prochaine mesure l'écrasera`, 'alert-info');
+            } else {
+                // Échantillon vide : remettre vue normale mais changer le curseur
+                viewingSample = null;
+                updateSampleVisualization();
+                updateDataStats();
+                updateChartTitle('Courbe Force vs Angle');
+                
+                showAlert(`Échantillon ${sampleNum} sélectionné pour la prochaine mesure`, 'alert-info');
+            }
+            
+            // Mettre à jour l'état visuel des boutons
+            updateSampleButtonsHighlight(sampleNum);
+            
+            // Mettre à jour l'interface pour refléter le changement d'échantillon courant
+            updateVarietyInterface();
+            
+            // Relancer l'écoute pour détecter une nouvelle mesure sur cet échantillon
+            startListening();
+        }
+
+        function viewSample(sampleNum) {
+            if (!sampleData[sampleNum] || sampleData[sampleNum].length === 0) {
+                showAlert(`Échantillon ${sampleNum} non disponible`, 'alert-warning');
+                return;
+            }
+
+            viewingSample = sampleNum;
+            
+            // IMPORTANT : Changer le currentSample pour que la prochaine mesure écrase cet échantillon
+            currentSample = sampleNum;
+            
+            // Reconstruire l'affichage avec l'échantillon sélectionné en avant
+            updateSampleVisualization();
+
+            // Mettre à jour les statistiques avec cet échantillon
+            const tempMeasurementData = measurementData;
+            measurementData = [...sampleData[sampleNum]]; // Temporaire pour les stats
+            updateDataStats();
+            measurementData = tempMeasurementData; // Restaurer
+
+            // Mettre à jour le titre du graphique
+            updateChartTitle(`Échantillon ${sampleNum} sélectionné`);
+            
+            // Mettre à jour l'état visuel des boutons
+            updateSampleButtonsHighlight(sampleNum);
+            
+            // Mettre à jour l'interface pour refléter le changement d'échantillon courant
+            updateVarietyInterface();
+            
+            // Relancer l'écoute pour détecter une nouvelle mesure sur cet échantillon
+            startListening();
+            
+            showAlert(`Échantillon ${sampleNum} sélectionné - Prochaine mesure l'écrasera`, 'alert-info');
+        }
+
+        function showAllSamples() {
+            viewingSample = null;
+            
+            // Remettre currentSample sur le prochain échantillon vide
+            let nextEmptySample = null;
+            for (let i = 1; i <= maxSamples; i++) {
+                if (!sampleData[i] || sampleData[i].length === 0) {
+                    nextEmptySample = i;
+                    break;
+                }
+            }
+            
+            if (nextEmptySample) {
+                currentSample = nextEmptySample;
+            } else if (currentSample > maxSamples) {
+                // Tous les échantillons sont faits, rester sur le dernier
+                currentSample = maxSamples;
+            }
+            
+            // Remettre l'affichage normal
+            updateSampleVisualization();
+            updateDataStats();
+
+            // Remettre le titre par défaut
+            updateChartTitle('Courbe Force vs Angle');
+            
+            // Remettre l'état normal des boutons
+            updateSampleButtonsHighlight(null);
+            
+            // Mettre à jour l'interface
+            updateVarietyInterface();
+            
+            // Relancer l'écoute si on a un échantillon vide
+            if (nextEmptySample) {
+                startListening();
+            }
+        }
+
+        function rebuildPreviousMeasurements() {
+            // Reconstruire previousMeasurements à partir de sampleData (sauf échantillon actuel)
+            previousMeasurements = [];
+            for (let i = 1; i <= maxSamples; i++) {
+                if (i !== currentSample && sampleData[i] && sampleData[i].length > 0) {
+                    sampleData[i].forEach(point => {
+                        previousMeasurements.push(point);
+                    });
+                }
+            }
+            
+            // Mettre à jour l'affichage
+            updateSampleVisualization();
+        }
+
+        function updateSampleVisualization() {
+            // Gestion de l'affichage selon le mode
+            if (viewingSample !== null) {
+                // Mode "mise en avant" d'un échantillon spécifique
+                
+                // Dataset 0 : tous les autres échantillons en très transparent
+                chart.data.datasets[0].data = [];
+                for (let i = 1; i <= maxSamples; i++) {
+                    if (i !== viewingSample && sampleData[i] && sampleData[i].length > 0) {
+                        sampleData[i].forEach(point => {
+                            chart.data.datasets[0].data.push({x: point.angle, y: point.force});
+                        });
+                    }
+                }
+                
+                // Dataset 1 : échantillon mis en avant + mesure en cours
+                chart.data.datasets[1].data = [];
+                
+                // Ajouter l'échantillon mis en avant
+                if (sampleData[viewingSample]) {
+                    sampleData[viewingSample].forEach(point => {
+                        chart.data.datasets[1].data.push({x: point.angle, y: point.force});
+                    });
+                }
+                
+                // Ajouter la mesure en cours si elle existe
+                measurementData.forEach(point => {
+                    chart.data.datasets[1].data.push({x: point.angle, y: point.force});
+                });
+                
+            } else {
+                // Mode normal : échantillons précédents en transparent + mesure actuelle
+                
+                // Dataset 0 : tous les échantillons terminés en transparent
+                chart.data.datasets[0].data = [];
+                previousMeasurements.forEach(point => {
+                    chart.data.datasets[0].data.push({x: point.angle, y: point.force});
+                });
+                
+                // Dataset 1 : mesure en cours
+                chart.data.datasets[1].data = [];
+                measurementData.forEach(point => {
+                    chart.data.datasets[1].data.push({x: point.angle, y: point.force});
+                });
+            }
+            
+            chart.update('none');
+        }
+
+        function updateSampleButtonsHighlight(highlightedSample) {
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`sampleBtn${i}`);
+                
+                // Si c'est l'échantillon en cours (currentSample) ou l'échantillon sélectionné pour visualisation
+                if (i === highlightedSample || i === currentSample) {
+                    // Ajouter une classe pour le mettre en surbrillance
+                    btn.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    // Retirer la surbrillance
+                    btn.style.boxShadow = '';
+                    btn.style.transform = '';
+                }
+            }
+        }
+
+        function updateChartTitle(title) {
+            const chartTitle = document.querySelector('.chart-title');
+            chartTitle.textContent = title;
+            
+            // Ajouter un bouton de retour si on visualise un échantillon spécifique
+            if (viewingSample !== null) {
+                chartTitle.innerHTML = `${title} <button onclick="showAllSamples()" style="margin-left: 10px; font-size: 0.8rem; padding: 2px 8px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: pointer;">↩️ Vue globale</button>`;
+            }
+        }
+
+        function showContextMenu(event, sampleNum) {
+            const menu = document.getElementById('sampleContextMenu');
+            selectedSampleForMenu = sampleNum;
+            
+            menu.style.display = 'block';
+            menu.style.left = event.pageX + 'px';
+            menu.style.top = event.pageY + 'px';
+        }
+
+        function hideContextMenu() {
+            const menu = document.getElementById('sampleContextMenu');
+            menu.style.display = 'none';
+            selectedSampleForMenu = null;
+        }
+
+        function viewSampleFromMenu() {
+            if (selectedSampleForMenu) {
+                selectSample(selectedSampleForMenu);
+                hideContextMenu();
+            }
+        }
+
+        async function deleteSample() {
+            if (!selectedSampleForMenu) return;
+            
+            const sampleNum = selectedSampleForMenu;
+            hideContextMenu();
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer l'échantillon ${sampleNum} et le refaire ?`)) {
                 return;
             }
 
             try {
-                const response = await fetch('/api/measurement/export/excel', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        variety: currentVariety,
-                        sample_number: currentSample,
-                        filename: `${currentVariety}_ech${currentSample}`
-                    })
-                });
-
-                if (response.ok) {
-                    showAlert(`Échantillon ${currentSample} de ${currentVariety} sauvegardé`, 'alert-success');
-
-                    // Effacer les données pour le prochain échantillon
-                    await clearMeasurement();
-
-                    // Proposer de passer au suivant
-                    updateVarietyInterface();
-
-                } else {
-                    const result = await response.json();
-                    showAlert('Erreur sauvegarde: ' + (result.error || 'Échec'), 'alert-danger');
+                // Supprimer les données localement
+                delete sampleData[sampleNum];
+                
+                // Reconstruire les mesures précédentes
+                rebuildPreviousMeasurements();
+                
+                // Si on était en train de visualiser cet échantillon, revenir à la vue globale
+                if (viewingSample === sampleNum) {
+                    showAllSamples();
                 }
+                
+                // Mettre à jour l'affichage du bouton
+                updateSampleButton(sampleNum, 'empty');
+                
+                // Si c'était l'échantillon courant ou un échantillon antérieur, 
+                // repositionner le curseur sur cet échantillon pour le refaire
+                if (sampleNum <= currentSample) {
+                    currentSample = sampleNum;
+                    updateVarietyInterface();
+                    
+                    // Relancer l'écoute
+                    startListening();
+                }
+                
+                showAlert(`Échantillon ${sampleNum} supprimé. Vous pouvez maintenant le refaire.`, 'alert-success');
+                
             } catch (error) {
-                showAlert('Erreur de communication: ' + error.message, 'alert-danger');
-            }
-        }
-
-        function nextSample() {
-            if (currentSample < maxSamples) {
-                currentSample++;
-                updateVarietyInterface();
-                showAlert(`Passage à l'échantillon ${currentSample}`, 'alert-info');
+                showAlert('Erreur lors de la suppression: ' + error.message, 'alert-danger');
             }
         }
 
@@ -1791,42 +2835,17 @@
             currentVariety = null;
             currentSample = 0;
             measurementData = [];
-            chart.data.datasets[0].data = [];
+            previousMeasurements = []; // Nettoyer les mesures précédentes
+            sampleData = {}; // Nettoyer les données d'échantillons
+            viewingSample = null; // Remettre la vue globale
+            chart.data.datasets[0].data = []; // Dataset des mesures précédentes
+            chart.data.datasets[1].data = []; // Dataset de la mesure actuelle
             chart.update();
             updateDataStats();
+            updateChartTitle('Courbe Force vs Angle'); // Remettre le titre par défaut
             updateVarietyInterface();
         }
 
-        // Mettre à jour la fonction updateButtons pour le nouveau workflow
-        function updateButtons() {
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const clearBtn = document.getElementById('clearBtn');
-
-            // Logique de base
-            stopBtn.disabled = !isMeasuring;
-            clearBtn.disabled = isMeasuring;
-
-            // Nouvelles logiques
-            if (currentVariety) {
-                startBtn.disabled = isMeasuring;
-                saveBtn.disabled = measurementData.length === 0 || isMeasuring;
-            } else {
-                startBtn.disabled = true;
-                saveBtn.disabled = true;
-            }
-
-            // Mise à jour du texte du bouton start
-            const btnText = startBtn.querySelector('.btn-text');
-            if (isMeasuring) {
-                btnText.innerHTML = '<span class="loading"></span> Mesure en cours';
-            } else if (currentVariety) {
-                btnText.innerHTML = `🚀 Démarrer mesure (${currentVariety} - éch.${currentSample})`;
-            } else {
-                btnText.innerHTML = '🚀 Démarrer mesure';
-            }
-        }
     </script>
 </body>
 </html>

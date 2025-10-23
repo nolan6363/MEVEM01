@@ -34,6 +34,8 @@ selected_port = None
 averaging_window = 25  # Nombre de valeurs pour la moyenne
 angle_accumulator = []  # Accumulateur pour les angles
 force_accumulator = []  # Accumulateur pour les forces
+initial_skip_points = 10  # Nombre de points à ignorer au début (bruit initial)
+points_received = 0  # Compteur de points reçus dans la mesure actuelle
 
 def get_available_ports():
     """Obtenir la liste des ports série disponibles"""
@@ -121,9 +123,10 @@ def initialize_decoder(port=None):
         return False
 
 def measurement_worker():
-    """Worker thread pour la mesure en continu"""
+    """Worker thread pour la mesure en continu avec détection automatique"""
     global current_measurement, measurement_active, decoder
     global averaging_window, angle_accumulator, force_accumulator
+    global initial_skip_points, points_received
     
     if not decoder.connect():
         socketio.emit('error', {'message': 'Impossible de se connecter au capteur'})
@@ -131,10 +134,16 @@ def measurement_worker():
     
     buffer = ""
     start_time = time.time()
+    last_data_time = time.time()
     
-    # Réinitialiser les accumulateurs
+    # Réinitialiser les accumulateurs et compteurs
     angle_accumulator = []
     force_accumulator = []
+    points_received = 0
+    
+    # Variables pour la détection automatique
+    data_received = False
+    silence_threshold = 3.0  # 3 secondes de silence pour arrêter automatiquement
     
     try:
         while measurement_active:
@@ -145,6 +154,8 @@ def measurement_worker():
                     
                     if chunk:
                         buffer += chunk.decode('utf-8', errors='ignore')
+                        last_data_time = time.time()
+                        data_received = True
                         
                         while '\n' in buffer:
                             line, buffer = buffer.split('\n', 1)
@@ -152,6 +163,13 @@ def measurement_worker():
                             
                             if parsed:
                                 for data in parsed:
+                                    points_received += 1
+                                    
+                                    # Ignorer les premiers points (bruit initial)
+                                    if points_received <= initial_skip_points:
+                                        print(f"🚫 Ignorer point {points_received}/{initial_skip_points} (bruit initial)")
+                                        continue
+                                    
                                     # Accumuler les valeurs
                                     angle_accumulator.append({
                                         'angle': data['angle_deg'],
@@ -186,6 +204,16 @@ def measurement_worker():
                                         # Vider les accumulateurs
                                         angle_accumulator = []
                                         force_accumulator = []
+                
+                # Détection d'arrêt automatique si aucune donnée reçue depuis un moment
+                if data_received and (time.time() - last_data_time) > silence_threshold:
+                    print("🔴 Arrêt automatique détecté (silence détecté)")
+                    measurement_active = False
+                    socketio.emit('measurement_auto_stopped', {
+                        'message': 'Mesure arrêtée automatiquement (fin des données)',
+                        'data_points': len(current_measurement)
+                    })
+                    break
                 
                 time.sleep(0.01)
                 
@@ -274,17 +302,34 @@ def start_calibration():
 @app.route('/api/measurement/start', methods=['POST'])
 def start_measurement():
     """Démarrer une mesure"""
-    global measurement_active, measurement_thread, current_measurement
+    global measurement_active, measurement_thread, current_measurement, points_received
     
     if measurement_active:
         return jsonify({'error': 'Une mesure est déjà en cours'}), 400
     
     current_measurement = []
+    points_received = 0  # Réinitialiser le compteur
     measurement_active = True
     measurement_thread = threading.Thread(target=measurement_worker, daemon=True)
     measurement_thread.start()
     
     return jsonify({'success': True, 'message': 'Mesure démarrée'})
+
+@app.route('/api/measurement/start_listening', methods=['POST'])
+def start_listening():
+    """Démarrer l'écoute automatique des données (sans mesure active)"""
+    global measurement_active, measurement_thread, current_measurement, points_received
+    
+    if measurement_active:
+        return jsonify({'success': True, 'message': 'Écoute déjà active'})
+    
+    current_measurement = []
+    points_received = 0  # Réinitialiser le compteur
+    measurement_active = True
+    measurement_thread = threading.Thread(target=measurement_worker, daemon=True)
+    measurement_thread.start()
+    
+    return jsonify({'success': True, 'message': 'Écoute des données démarrée'})
 
 @app.route('/api/measurement/stop', methods=['POST'])
 def stop_measurement():
@@ -354,9 +399,32 @@ def set_averaging_window():
         'averaging_window': averaging_window
     })
 
+@app.route('/api/skip_points/set', methods=['POST'])
+def set_skip_points():
+    """Définir le nombre de points à ignorer au début (bruit initial)"""
+    global initial_skip_points
+    
+    try:
+        data = request.get_json()
+        new_skip = int(data.get('skip_points', 10))
+        
+        if new_skip < 0 or new_skip > 100:
+            return jsonify({'error': 'Nombre de points à ignorer doit être entre 0 et 100'}), 400
+        
+        initial_skip_points = new_skip
+        print(f"🚫 Points à ignorer défini à {initial_skip_points}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Nombre de points à ignorer défini à {new_skip}',
+            'skip_points': initial_skip_points
+        })
+    except Exception as e:
+        return jsonify({'error': f'Erreur configuration points à ignorer: {str(e)}'}), 500
+
 @app.route('/api/measurement/export/excel', methods=['POST'])
 def export_to_excel():
-    """Exporter les données vers Excel"""
+    """Exporter les données vers Excel avec gestion des échantillons multiples"""
     if not current_measurement:
         return jsonify({'error': 'Aucune donnée à exporter'}), 400
 
@@ -365,15 +433,19 @@ def export_to_excel():
         data = request.get_json() if request.is_json else {}
         variety = data.get('variety', '').strip()
         sample_number = data.get('sample_number', 1)
-        custom_filename = data.get('filename', '').strip()
+        
+        if not variety:
+            return jsonify({'error': 'Variété obligatoire pour la sauvegarde'}), 400
 
-        # Créer un DataFrame pandas
-        df = pd.DataFrame(current_measurement)
+        # Créer le dossier de la variété
+        variety_dir = os.path.join('exports', variety)
+        os.makedirs(variety_dir, exist_ok=True)
 
-        # Créer un buffer en mémoire
-        output = io.BytesIO()
+        # Nom du fichier principal pour cette variété
+        main_filename = f"{variety}_mesures.xlsx"
+        filepath = os.path.join(variety_dir, main_filename)
 
-        # Calculer les statistiques
+        # Calculer les statistiques de la mesure actuelle
         forces = [p['force'] for p in current_measurement]
         angles = [p['angle'] for p in current_measurement]
         timestamps = [p['timestamp'] for p in current_measurement]
@@ -382,56 +454,69 @@ def export_to_excel():
         max_force_index = forces.index(max_force) if forces else 0
         angle_at_max_force = angles[max_force_index] if angles else 0
 
-        # Écrire le fichier Excel
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='Mesures MEVEM', index=False)
+        # Créer un DataFrame pour cette mesure
+        df_measurement = pd.DataFrame(current_measurement)
 
-            # Ajouter des informations de métadonnées enrichies
-            metadata_info = [
-                'Date de mesure', 'Variété', 'Échantillon', 'Nombre de points',
-                'Durée (s)', 'Angle min (°)', 'Angle max (°)',
-                'Force min (kg)', 'Force max (kg)', 'Angle à force max (°)'
-            ]
-            metadata_values = [
-                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                variety or 'Non spécifiée',
-                sample_number,
-                len(current_measurement),
-                round(max(timestamps) - min(timestamps) if timestamps else 0, 2),
-                round(min(angles) if angles else 0, 2),
-                round(max(angles) if angles else 0, 2),
-                round(min(forces) if forces else 0, 3),
-                round(max_force, 3),
-                round(angle_at_max_force, 2)
-            ]
+        # Métadonnées pour cette mesure
+        metadata_info = [
+            'Date de mesure', 'Variété', 'Échantillon', 'Nombre de points',
+            'Durée (s)', 'Angle min (°)', 'Angle max (°)',
+            'Force min (kg)', 'Force max (kg)', 'Angle à force max (°)'
+        ]
+        metadata_values = [
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            variety,
+            sample_number,
+            len(current_measurement),
+            round(max(timestamps) - min(timestamps) if timestamps else 0, 2),
+            round(min(angles) if angles else 0, 2),
+            round(max(angles) if angles else 0, 2),
+            round(min(forces) if forces else 0, 3),
+            round(max_force, 3),
+            round(angle_at_max_force, 2)
+        ]
 
-            metadata_df = pd.DataFrame({
-                'Information': metadata_info,
-                'Valeur': metadata_values
-            })
-            metadata_df.to_excel(writer, sheet_name='Métadonnées', index=False)
+        # Nom des onglets
+        sheet_name_data = f"Echantillon_{sample_number}"
+        sheet_name_meta = f"Meta_Ech_{sample_number}"
 
-        output.seek(0)
-
-        # Nom du fichier intelligent
-        if custom_filename:
-            filename = f"{custom_filename}.xlsx"
-        elif variety:
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"{variety}_ech{sample_number}_{timestamp}.xlsx"
+        # Si le fichier existe déjà, on l'ouvre et on ajoute les nouveaux onglets
+        if os.path.exists(filepath):
+            # Lire le fichier existant
+            with pd.ExcelWriter(filepath, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+                # Ajouter les données de cette mesure
+                df_measurement.to_excel(writer, sheet_name=sheet_name_data, index=False)
+                
+                # Ajouter les métadonnées
+                metadata_df = pd.DataFrame({
+                    'Information': metadata_info,
+                    'Valeur': metadata_values
+                })
+                metadata_df.to_excel(writer, sheet_name=sheet_name_meta, index=False)
         else:
-            filename = f"mevem_mesure_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            # Créer un nouveau fichier
+            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+                # Ajouter les données de cette mesure
+                df_measurement.to_excel(writer, sheet_name=sheet_name_data, index=False)
+                
+                # Ajouter les métadonnées
+                metadata_df = pd.DataFrame({
+                    'Information': metadata_info,
+                    'Valeur': metadata_values
+                })
+                metadata_df.to_excel(writer, sheet_name=sheet_name_meta, index=False)
 
-        # Créer le dossier de la variété si nécessaire
-        if variety:
-            variety_dir = os.path.join('exports', variety)
-            os.makedirs(variety_dir, exist_ok=True)
+        # Créer la réponse pour le téléchargement
+        output = io.BytesIO()
+        with open(filepath, 'rb') as f:
+            output.write(f.read())
+        output.seek(0)
 
         return send_file(
             output,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             as_attachment=True,
-            download_name=filename
+            download_name=main_filename
         )
 
     except Exception as e:
@@ -502,7 +587,7 @@ def read_current_values():
 
 @app.route('/api/variety/stats', methods=['POST'])
 def export_variety_stats():
-    """Exporter les statistiques d'une variété (compilation de 5 échantillons)"""
+    """Exporter les statistiques d'une variété à partir du fichier consolidé"""
     try:
         data = request.get_json()
         variety = data.get('variety', '').strip()
@@ -510,82 +595,85 @@ def export_variety_stats():
         if not variety:
             return jsonify({'error': 'Variété non spécifiée'}), 400
 
-        # Chercher les fichiers de la variété dans le dossier exports
+        # Chercher le fichier principal de la variété
         variety_dir = os.path.join('exports', variety)
-        if not os.path.exists(variety_dir):
-            return jsonify({'error': f'Aucune donnée trouvée pour la variété {variety}'}), 404
+        main_file = os.path.join(variety_dir, f"{variety}_mesures.xlsx")
+        
+        if not os.path.exists(main_file):
+            return jsonify({'error': f'Aucune donnée consolidée trouvée pour la variété {variety}'}), 404
 
-        # Collecter les données des échantillons
-        sample_stats = []
-
-        for i in range(1, 6):  # Échantillons 1 à 5
-            # Chercher les fichiers d'échantillon (pattern : variety_ech{i}_*.xlsx)
-            pattern = f"{variety}_ech{i}_"
-            sample_files = [f for f in os.listdir(variety_dir) if f.startswith(pattern) and f.endswith('.xlsx')]
-
-            if sample_files:
-                # Prendre le fichier le plus récent pour cet échantillon
-                latest_file = max(sample_files, key=lambda x: os.path.getctime(os.path.join(variety_dir, x)))
-                file_path = os.path.join(variety_dir, latest_file)
-
-                # Lire les métadonnées du fichier Excel
-                try:
-                    metadata_df = pd.read_excel(file_path, sheet_name='Métadonnées')
+        # Lire tous les onglets de métadonnées du fichier
+        try:
+            sample_stats = []
+            
+            # Lister tous les onglets du fichier Excel
+            xls = pd.ExcelFile(main_file)
+            
+            for sheet_name in xls.sheet_names:
+                if sheet_name.startswith('Meta_Ech_'):
+                    # Extraire le numéro d'échantillon
+                    sample_num = int(sheet_name.split('_')[-1])
+                    
+                    # Lire les métadonnées
+                    metadata_df = pd.read_excel(main_file, sheet_name=sheet_name)
                     metadata_dict = dict(zip(metadata_df['Information'], metadata_df['Valeur']))
 
                     sample_stats.append({
-                        'echantillon': i,
-                        'fichier': latest_file,
+                        'echantillon': sample_num,
                         'force_max_kg': metadata_dict.get('Force max (kg)', 0),
                         'angle_force_max_deg': metadata_dict.get('Angle à force max (°)', 0),
                         'date_mesure': metadata_dict.get('Date de mesure', ''),
                         'nb_points': metadata_dict.get('Nombre de points', 0),
                         'duree_s': metadata_dict.get('Durée (s)', 0)
                     })
-                except Exception as e:
-                    print(f"Erreur lecture fichier {latest_file}: {e}")
 
-        if len(sample_stats) < 2:
-            return jsonify({'error': f'Pas assez de données pour {variety} (minimum 2 échantillons requis)'}), 400
+            # Trier par numéro d'échantillon
+            sample_stats.sort(key=lambda x: x['echantillon'])
 
-        # Créer le fichier de statistiques
-        stats_df = pd.DataFrame(sample_stats)
+            if len(sample_stats) < 1:
+                return jsonify({'error': f'Aucun échantillon valide trouvé pour {variety}'}), 400
 
-        # Calculer les statistiques globales
-        forces = [s['force_max_kg'] for s in sample_stats]
-        angles = [s['angle_force_max_deg'] for s in sample_stats]
+            # Créer le fichier de statistiques
+            stats_df = pd.DataFrame(sample_stats)
 
-        summary_stats = {
-            'Variété': variety,
-            'Nombre échantillons': len(sample_stats),
-            'Force max moyenne (kg)': round(sum(forces) / len(forces), 3),
-            'Force max médiane (kg)': round(sorted(forces)[len(forces)//2], 3),
-            'Force max min (kg)': round(min(forces), 3),
-            'Force max max (kg)': round(max(forces), 3),
-            'Angle moyen à force max (°)': round(sum(angles) / len(angles), 1),
-            'Écart-type force (kg)': round((sum([(f - sum(forces)/len(forces))**2 for f in forces]) / len(forces))**0.5, 3),
-            'Date compilation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
+            # Calculer les statistiques globales
+            forces = [s['force_max_kg'] for s in sample_stats]
+            angles = [s['angle_force_max_deg'] for s in sample_stats]
 
-        # Créer le fichier Excel de statistiques
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            # Feuille de résumé
-            summary_df = pd.DataFrame([summary_stats])
-            summary_df.to_excel(writer, sheet_name='Résumé', index=False)
+            summary_stats = {
+                'Variété': variety,
+                'Nombre échantillons': len(sample_stats),
+                'Force max moyenne (kg)': round(sum(forces) / len(forces), 3),
+                'Force max médiane (kg)': round(sorted(forces)[len(forces)//2], 3),
+                'Force max min (kg)': round(min(forces), 3),
+                'Force max max (kg)': round(max(forces), 3),
+                'Angle moyen à force max (°)': round(sum(angles) / len(angles), 1),
+                'Écart-type force (kg)': round((sum([(f - sum(forces)/len(forces))**2 for f in forces]) / len(forces))**0.5, 3) if len(forces) > 1 else 0,
+                'Date compilation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
 
-            # Feuille de détail par échantillon
-            stats_df.to_excel(writer, sheet_name='Détail échantillons', index=False)
+            # Créer le fichier Excel de statistiques
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                # Feuille de résumé
+                summary_df = pd.DataFrame([summary_stats])
+                summary_df.to_excel(writer, sheet_name='Résumé', index=False)
 
-        output.seek(0)
-        filename = f"{variety}_statistiques_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+                # Feuille de détail par échantillon
+                stats_df.to_excel(writer, sheet_name='Détail échantillons', index=False)
 
-        return send_file(
-            output,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            as_attachment=True,
-            download_name=filename
-        )
+            output.seek(0)
+            filename = f"{variety}_statistiques_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=filename
+            )
+
+        except Exception as e:
+            return jsonify({'error': f'Erreur lecture des données: {str(e)}'}), 500
 
     except Exception as e:
         return jsonify({'error': f'Erreur export statistiques: {str(e)}'}), 500

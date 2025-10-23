@@ -5,7 +5,7 @@ a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates')],
+    datas=[('templates', 'templates'), ('static', 'static')],
     hiddenimports=['pandas', 'openpyxl', 'flask_socketio', 'engineio', 'socketio', 'engineio.server', 'socketio.server', 'engineio.async_drivers.threading', 'serial', 'serial.tools.list_ports', 'threading'],
     hookspath=[],
     hooksconfig={},
